@@ -1,0 +1,275 @@
+---
+title: "`r params$set_title`"
+author: "`r params$set_author`"
+date: "`r Sys.Date()`"
+params:
+  printcode: no
+  printwarning: no
+  storecache: yes
+  set_title: "Lebanon Year 1 (2016-2017) Measurement Report"
+  set_author: "Michael Wu"
+output: 
+  officedown::rdocx_document:
+    mapstyles:
+      Normal: ['First Paragraph']
+    reference_docx: "MR_word_template.docx"
+---
+
+```{r setup, include = F}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.cap = TRUE,
+                      echo = params$printcode, 
+                      warning = params$printwarning, 
+                      cache = params$storecache,
+                      message = F, 
+                      results="asis")
+library(officedown)
+library(officer)
+library(tidyverse)
+library(psych)
+library(MplusAutomation)
+library(gridExtra)
+library(semPlot)
+library(kableExtra)
+library(flextable)
+
+fp <- fp_par(
+  text.align = "center", 
+  padding.bottom = 20, padding.top = 120, 
+  border.bottom = fp_border())
+
+ft <- fp_text(shading.color='#EFEFEF', 
+              bold = TRUE)
+```
+
+```{r user input text, include = F}
+year <- "Lebanon Year 1 (2016-2017)"
+
+```
+
+```{r user input data, include = F}
+data_file_path <- "~/Box/3EA Analysis/3EA Lebanon_Analysis/Lebanon_Y1_FA/LBY1_PREIMPUTED_FULL_SPREAD_10-31-2019_mplus.dta"
+
+subset_data <- Hmisc::Cs(
+                HB1_AB_1, HB2_AB_1, HB3_AB_1, HB4_AB_1, HB5_AB_1, HB6_AB_1, 
+                HB1_AD_1, HB2_AD_1, HB3_AD_1, HB4_AD_1, HB5_AD_1, HB6_AD_1, 
+                HB1_SD_1, HB2_SD_1, HB3_SD_1, HB4_SD_1, HB5_SD_1, HB6_SD_1, 
+                HB1_AR_1, HB2_AR_1, HB3_AR_1, HB4_AR_1, HB5_AR_1, HB6_AR_1, 
+                
+                HB1_AB_2, HB2_AB_2, HB3_AB_2, HB4_AB_2, HB5_AB_2, HB6_AB_2, 
+                HB1_AD_2, HB2_AD_2, HB3_AD_2, HB4_AD_2, HB5_AD_2, HB6_AD_2, 
+                HB1_SD_2, HB2_SD_2, HB3_SD_2, HB4_SD_2, HB5_SD_2, HB6_SD_2, 
+                HB1_AR_2, HB2_AR_2, HB3_AR_2, HB4_AR_2, HB5_AR_2, HB6_AR_2,
+                
+                HB1_AB_3, HB2_AB_3, HB3_AB_3, HB4_AB_3, HB5_AB_3, HB6_AB_3, 
+                HB1_AD_3, HB2_AD_3, HB3_AD_3, HB4_AD_3, HB5_AD_3, HB6_AD_3, 
+                HB1_SD_3, HB2_SD_3, HB3_SD_3, HB4_SD_3, HB5_SD_3, HB6_SD_3, 
+                HB1_AR_3, HB2_AR_3, HB3_AR_3, HB4_AR_3, HB5_AR_3, HB6_AR_3)
+
+
+```
+
+```{r data preparation, include = F}
+dat <- haven::read_dta(data_file_path)
+
+dat.s <- as.data.frame(select(dat, all_of(subset_data)))
+```
+
+\newpage
+
+This document presents most of the features of the package `r ftext("officedown", ft)`. 
+`r fp`
+
+## Table of content
+
+<!---BLOCK_TOC--->
+
+## List of figures
+
+<!---BLOCK_TOC{seq_id: 'fig'}--->
+
+## List of tables
+
+<!---BLOCK_TOC{seq_id: 'tab'}--->
+
+
+\newpage
+
+
+## Data and Sample
+
+This report presents descriptive and psychometric information of the measures used for `r year`.
+
+## Method
+
+TBD...
+
+
+<!---BLOCK_LANDSCAPE_START--->
+## Results
+
+### Descriptive Statistics
+
+see Table \@ref(tab:descriptive).
+
+```{r descriptive, tab.cap="Descriptive Statistics",tab.id = "descriptive"}
+ds <- round(describe(dat.s), 3)
+
+flextable(ds) %>%
+  align(part = "all") %>% # left align
+  font(fontname = "Times", part = "all") %>% 
+  fontsize(size = 10, part = "body") %>% 
+  # add footer if you want
+  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+  #                colwidths = 4) %>% 
+  theme_booktabs() %>% # default theme
+  autofit()
+
+
+```
+
+
+<!---BLOCK_LANDSCAPE_STOP--->
+
+see Figure \@ref(fig:ds_plot).
+
+```{r ds_plot, fig.id = "ds_plot", fig.height = 8, fig.width = 6}
+
+# descriptive plots
+
+par(mfrow = c(6,6),
+    mar = c(4,1,1,1))
+
+if(ncol(dat.s) <= 24){
+  
+  for (i in 1:ncol(dat.s)) {
+    hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+
+  } else if(ncol(dat.s) <= 48) {
+    
+  for (i in 1:24) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  for (i in 25:ncol(dat.s)) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  } else if(ncol(dat.s) <= 72) {
+    
+  for (i in 1:24) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  for (i in 25:48) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  for (i in 49:ncol(dat.s)) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  } else if(ncol(dat.s) <= 96) {
+    
+  for (i in 1:24) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  for (i in 25:48) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  for (i in 49:72) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+  for (i in 73:ncol(dat.s)) {
+  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    
+}
+    
+
+  
+```
+
+\newpage
+
+### Internal Reliability and Correlations
+
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eu pulvinar arcu, quis aliquam dui. In at cursus ante. Vestibulum non sagittis lacus. Duis vitae iaculis dui. Vivamus tempor, nibh ut pretium tempus, enim lorem dignissim quam, at euismod massa magna at magna. Sed facilisis dapibus diam nec volutpat. Maecenas facilisis dapibus egestas. Curabitur dignissim pharetra pulvinar. Nunc bibendum elit sed cursus congue. Curabitur ligula quam, iaculis faucibus orci quis, vestibulum lobortis lectus. Suspendisse fringilla nisl pulvinar, laoreet tellus sed, sollicitudin tortor. Donec consequat congue erat in iaculis. Curabitur luctus tellus ut turpis iaculis, nec laoreet ligula scelerisque.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eu pulvinar arcu, quis aliquam dui. In at cursus ante. Vestibulum non sagittis lacus. Duis vitae iaculis dui. Vivamus tempor, nibh ut pretium tempus, enim lorem dignissim quam, at euismod massa magna at magna. Sed facilisis dapibus diam nec volutpat. Maecenas facilisis dapibus egestas. Curabitur dignissim pharetra pulvinar. Nunc bibendum elit sed cursus congue. Curabitur ligula quam, iaculis faucibus orci quis, vestibulum lobortis lectus. Suspendisse fringilla nisl pulvinar, laoreet tellus sed, sollicitudin tortor. Donec consequat congue erat in iaculis. Curabitur luctus tellus ut turpis iaculis, nec laoreet ligula scelerisque.
+
+
+## Tables
+
+### Table 1
+
+
+```{r tab.cap="caption 1", tab.id="mtcars"}
+head(mtcars)
+```
+
+### Table 2
+
+```{r tab.cap="iris"}
+head(iris)
+```
+
+### Table 3
+
+```{r tab.cap="cars", tab.id="cars"}
+head(cars)
+```
+
+
+## figures 
+
+
+### A boxplot
+
+```{r fig.cap="A boxplot", fig.id = "boxplot"}
+boxplot(1:8)
+```
+
+### A barplot
+
+```{r fig.cap="What a barplot", fig.id = "barplot"}
+barplot(1:8)
+```
+
+## Lists
+
+Amet nunc eros curabitur tellus massa, eros maximus porttitor sociosqu, pellentesque.
+
+* Erat mauris egestas finibus tincidunt sed in rhoncus a tellus etiam. 
+    - A adipiscing per ultricies justo tellus lorem. 
+        - Imperdiet ut dui primis, sed gravida, at sed nulla. 
+        - Sem posuere lacus consequat inceptos dapibus duis malesuada finibus. 
+    - Urna sed dui, ornare, eu turpis mus pellentesque amet amet bibendum. 
+* Himenaeos tincidunt, auctor dapibus scelerisque, montes nunc faucibus 
+sodales malesuada ridiculus sed cubilia ligula.
+
+
+1. Erat mauris egestas finibus tincidunt sed in rhoncus a tellus etiam. 
+    1. A adipiscing per ultricies justo tellus lorem. 
+        1. Imperdiet ut dui primis, sed gravida, at sed nulla. 
+        2. Sem posuere lacus consequat inceptos dapibus duis malesuada finibus. 
+    2. Urna sed dui, ornare, eu turpis mus pellentesque amet amet bibendum. 
+2. Himenaeos tincidunt, auctor dapibus scelerisque, montes nunc faucibus 
+sodales malesuada ridiculus sed cubilia ligula.
+
+
+Lorem dolor interdum orci eros pellentesque semper tristique, sodales, et sed
+ut! Porta mattis natoque et. Ac facilisi ipsum viverra elementum vestibulum
+ligula amet enim magnis luctus ullamcorper. Rhoncus rhoncus elit in at nisl.
+Tincidunt habitant sit.
+
+
+* Aptent conubia quam montes id sagittis.
+    - Mattis nisi nascetur, aliquam duis ex, tristique.
+        - Imperdiet ut dui primis, sed gravida, at sed nulla. 
+        - Donec ligula nulla ac. Nisl ac at accumsan sagittis eros felis lobortis amet 
+        nec phasellus urna bibendum sapien.
+    - Eu dui ac id, dictum proin consectetur convallis.
+* Facilisi eu lectus mauris lorem. Et sed sapien pellentesque sed etiam vehicula. 
+* In porttitor id lorem eu efficitur, nisl dis!
+
+
+## Reference
+
+see figure \@ref(fig:boxplot) and table \@ref(tab:mtcars)!
+
