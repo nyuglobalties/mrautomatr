@@ -1,0 +1,38 @@
+---
+title: "Untitled"
+author: "Michael Wu"
+date: "10/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# defines master_params
+master_params <- list(...)
+```
+
+
+```{r results='asis'}
+for (param_set in master_params) {
+  rmarkdown::render(input = file_path_template, output_file = file.path(param_set$factor_analysis_name, ".docx"), params = param_set$params)
+}
+
+md_files <- list.files(pattern = "\\.md$")
+factor_analysis_pats <- vapply(param_set, function(.x) .x$factor_analysis_name, character(1))
+factor_analysis_pats <- paste0(paste0("^", factor_analysis_pats), collapse = "|")
+
+factor_mds <- grep(factor_analysis_pats, md_files, value = TRUE)
+
+big_md_file <- character()
+
+for (md in factor_mds) {
+  content <- readLines(md)
+  big_md_file <- c(big_md_file, content)
+}
+
+rmarkdown::from_rmarkdown(big_md_file)
+```
+

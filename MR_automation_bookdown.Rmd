@@ -21,7 +21,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       echo = params$printcode, 
                       warning = params$printwarning, 
                       cache = params$storecache,
-                      message = F, 
+                      message = F,
+                      error = T,
                       results="asis")
 library(officedown)
 library(officer)
@@ -40,6 +41,9 @@ fp <- fp_par(
 
 ft <- fp_text(shading.color='#EFEFEF', 
               bold = TRUE)
+
+source("R/functions.R")
+source("extractEFAparameters.R")
 ```
 
 ```{r user input text, include = F}
@@ -65,6 +69,10 @@ subset_data <- Hmisc::Cs(
                 HB1_AD_3, HB2_AD_3, HB3_AD_3, HB4_AD_3, HB5_AD_3, HB6_AD_3, 
                 HB1_SD_3, HB2_SD_3, HB3_SD_3, HB4_SD_3, HB5_SD_3, HB6_SD_3, 
                 HB1_AR_3, HB2_AR_3, HB3_AR_3, HB4_AR_3, HB5_AR_3, HB6_AR_3)
+
+
+model_file_path <- "~/Box/For Zezhen/MR automation/Test Data"
+model_lg_inv_scalar = "CS123_CFA4_inv_scalar.out"
 
 
 ```
@@ -112,8 +120,11 @@ TBD...
 
 see Table \@ref(tab:descriptive).
 
-```{r descriptive, tab.cap="Descriptive Statistics",tab.id = "descriptive"}
-ds <- round(describe(dat.s), 3)
+```{r descriptive, tab.cap="Descriptive Statistics", tab.id = "descriptive"}
+ds <- describe(dat.s) %>% 
+  as.data.frame() %>%
+  round(digits = 3) %>%
+  rownames_to_column("variable")
 
 flextable(ds) %>%
   align(part = "all") %>% # left align
@@ -123,63 +134,76 @@ flextable(ds) %>%
   # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
   #                colwidths = 4) %>% 
   theme_booktabs() %>% # default theme
-  autofit()
+  set_table_properties(layout = "autofit")
 
 
 ```
+
 
 
 <!---BLOCK_LANDSCAPE_STOP--->
 
 see Figure \@ref(fig:ds_plot).
 
-```{r ds_plot, fig.id = "ds_plot", fig.height = 8, fig.width = 6}
+```{r ds_plot, fig.cap = "",fig.id = "ds_plot", fig.height = 8, fig.width = 6}
 
 # descriptive plots
 
 par(mfrow = c(6,6),
     mar = c(4,1,1,1))
 
-if(ncol(dat.s) <= 24){
-  
-  for (i in 1:ncol(dat.s)) {
-    hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+chunk_num <- ncol(dat.s) %/% 24
 
-  } else if(ncol(dat.s) <= 48) {
-    
+while (chunk_num >= 1) {
   for (i in 1:24) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+    index <- 24*(chunk_num - 1) + i
     
-  for (i in 25:ncol(dat.s)) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
-  } else if(ncol(dat.s) <= 72) {
-    
-  for (i in 1:24) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
-  for (i in 25:48) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
-  for (i in 49:ncol(dat.s)) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
-  } else if(ncol(dat.s) <= 96) {
-    
-  for (i in 1:24) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
-  for (i in 25:48) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
-  for (i in 49:72) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
-  for (i in 73:ncol(dat.s)) {
-  hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-    
+    hist(dat.s[, index], main = "", xlab = names(dat.s)[index])
+  }
+  
+  chunk_num <- chunk_num - 1
 }
-    
+
+# if(ncol(dat.s) <= 24){
+#   
+#   for (i in 1:ncol(dat.s)) {
+#     hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+# 
+#   } else if(ncol(dat.s) <= 48) {
+#     
+#   for (i in 1:24) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   for (i in 25:ncol(dat.s)) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   } else if(ncol(dat.s) <= 72) {
+#     
+#   for (i in 1:24) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   for (i in 25:48) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   for (i in 49:ncol(dat.s)) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   } else if(ncol(dat.s) <= 96) {
+#     
+#   for (i in 1:24) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   for (i in 25:48) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   for (i in 49:72) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+#   for (i in 73:ncol(dat.s)) {
+#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
+#     
+# }
+#     
 
   
 ```
@@ -189,9 +213,103 @@ if(ncol(dat.s) <= 24){
 ### Internal Reliability and Correlations
 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eu pulvinar arcu, quis aliquam dui. In at cursus ante. Vestibulum non sagittis lacus. Duis vitae iaculis dui. Vivamus tempor, nibh ut pretium tempus, enim lorem dignissim quam, at euismod massa magna at magna. Sed facilisis dapibus diam nec volutpat. Maecenas facilisis dapibus egestas. Curabitur dignissim pharetra pulvinar. Nunc bibendum elit sed cursus congue. Curabitur ligula quam, iaculis faucibus orci quis, vestibulum lobortis lectus. Suspendisse fringilla nisl pulvinar, laoreet tellus sed, sollicitudin tortor. Donec consequat congue erat in iaculis. Curabitur luctus tellus ut turpis iaculis, nec laoreet ligula scelerisque.
+```{r internal_reliability, tab.cap = "Internal Reliability", tab.id = "internal_reliability"}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eu pulvinar arcu, quis aliquam dui. In at cursus ante. Vestibulum non sagittis lacus. Duis vitae iaculis dui. Vivamus tempor, nibh ut pretium tempus, enim lorem dignissim quam, at euismod massa magna at magna. Sed facilisis dapibus diam nec volutpat. Maecenas facilisis dapibus egestas. Curabitur dignissim pharetra pulvinar. Nunc bibendum elit sed cursus congue. Curabitur ligula quam, iaculis faucibus orci quis, vestibulum lobortis lectus. Suspendisse fringilla nisl pulvinar, laoreet tellus sed, sollicitudin tortor. Donec consequat congue erat in iaculis. Curabitur luctus tellus ut turpis iaculis, nec laoreet ligula scelerisque.
+# 4. Internal reliability ####
+# (example: https://rpubs.com/hauselin/reliabilityanalysis)
+alpha_stats <- alpha(dat.s)
+
+alpha_drop <- alpha_stats$alpha.drop
+
+flextable(alpha_drop %>% 
+            round(digits = 3) %>%
+            rownames_to_column("variable")) %>%
+  align(part = "all") %>% # left align
+  font(fontname = "Times", part = "all") %>% 
+  fontsize(size = 10, part = "body") %>% 
+  # add footer if you want
+  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+  #                colwidths = 4) %>% 
+  theme_booktabs() %>% # default theme
+  set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r summary_item_statistics, tab.cap = "Summary Item Statistics", tab.id = "summary_item_statistics"}
+flextable(alpha_stats$item.stats %>% 
+            round(digits = 3) %>%
+            rownames_to_column("variable")) %>%
+  align(part = "all") %>% # left align
+  font(fontname = "Times", part = "all") %>% 
+  fontsize(size = 10, part = "body") %>% 
+  # add footer if you want
+  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+  #                colwidths = 4) %>% 
+  theme_booktabs() %>% # default theme
+  set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r item_total_statistics, tab.cap = "Item Total Statistics", tab.id = "item_total_statistics"}
+
+flextable(alpha_stats$total %>%
+            round(digits = 3) %>%
+            rownames_to_column("variable")) %>%
+  align(part = "all") %>% # left align
+  font(fontname = "Times", part = "all") %>% 
+  fontsize(size = 10, part = "body") %>% 
+  # add footer if you want
+  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+  #                colwidths = 4) %>% 
+  theme_booktabs() %>% # default theme
+  set_table_properties(layout = "autofit")
+
+```
+
+\newpage
+
+<!---BLOCK_LANDSCAPE_START--->
+```{r correlation_matrix, tab.cap = "Correlation Matrix", tab.id = "correlation_matrix"}
+# Correlation matrix
+
+df <- get.cor(data = suppressWarnings(readModels(target = file.path(model_file_path,model_lg_inv_scalar))), 
+             string = ".WITH$")
+
+flextable(df %>%
+            rownames_to_column("Variable")) %>%
+  align(part = "all") %>% # left align
+  font(fontname = "Times", part = "all") %>% 
+  fontsize(size = 10, part = "body") %>% 
+  # add footer if you want
+  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+  #                colwidths = 4) %>% 
+  theme_booktabs() %>% # default theme
+  set_table_properties(layout = "autofit")
+```
+
+<!---BLOCK_LANDSCAPE_STOP--->
+
+```{r EFA screeplot, fig.height = 4, fig.width = 12}
+# EFA screeplot
+
+# EFA <- readModels(file.path(model_file_path,"CS1_EFA.out"))
+# 
+# # For now, you can manually set up a spreadsheet and we can work from that spreadsheet in r
+# efa <- read.csv("Eigenvector check.csv", as.is  = T)
+# 
+# efa$wave <- as.factor(efa$wave)
+# efa$wave <- factor(efa$wave,levels(efa$wave)[c(1,3,2)])
+# 
+# efa.s <- filter(efa, measure == "CS")
+# p <- ggplot(efa.s, aes(x = factor, y = eigenvalue)) +
+#   geom_point() +
+#   geom_line() +
+#   scale_x_continuous(breaks = seq(0, max(efa.s$factor), by = 2)) +
+#   facet_wrap(~ wave) +
+#   labs(x = "\nComponent Number", y = "Eigenvalue\n", title = "Figure X. Scree plots") + theme_classic();p
+```
 
 
 ## Tables
