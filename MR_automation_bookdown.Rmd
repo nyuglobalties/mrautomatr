@@ -43,7 +43,6 @@ ft <- fp_text(shading.color='#EFEFEF',
               bold = TRUE)
 
 source("R/functions.R")
-source("extractEFAparameters.R")
 ```
 
 ```{r user input text, include = F}
@@ -72,7 +71,15 @@ subset_data <- Hmisc::Cs(
 
 
 model_file_path <- "~/Box/For Zezhen/MR automation/Test Data"
+
+model_cfa <- list("CS1_CFA4.out",
+               "CS2_CFA4.out",
+               "CS3_CFA4.out")
+
+
+
 model_lg_inv_scalar = "CS123_CFA4_inv_scalar.out"
+
 
 
 ```
@@ -164,47 +171,6 @@ while (chunk_num >= 1) {
   chunk_num <- chunk_num - 1
 }
 
-# if(ncol(dat.s) <= 24){
-#   
-#   for (i in 1:ncol(dat.s)) {
-#     hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-# 
-#   } else if(ncol(dat.s) <= 48) {
-#     
-#   for (i in 1:24) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   for (i in 25:ncol(dat.s)) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   } else if(ncol(dat.s) <= 72) {
-#     
-#   for (i in 1:24) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   for (i in 25:48) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   for (i in 49:ncol(dat.s)) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   } else if(ncol(dat.s) <= 96) {
-#     
-#   for (i in 1:24) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   for (i in 25:48) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   for (i in 49:72) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-#   for (i in 73:ncol(dat.s)) {
-#   hist(dat.s[,i], main = "", xlab = names(dat.s)[i])}
-#     
-# }
-#     
-
   
 ```
 
@@ -274,25 +240,25 @@ flextable(alpha_stats$total %>%
 ```{r correlation_matrix, tab.cap = "Correlation Matrix", tab.id = "correlation_matrix"}
 # Correlation matrix
 
-df <- get.cor(data = suppressWarnings(readModels(target = file.path(model_file_path,model_lg_inv_scalar))), 
+df_cor <- get.cor(data = suppressWarnings(readModels(target = file.path(model_file_path,model_lg_inv_scalar))), 
              string = ".WITH$")
 
-flextable(df %>%
+flextable(df_cor %>%
             rownames_to_column("Variable")) %>%
   align(part = "all") %>% # left align
   font(fontname = "Times", part = "all") %>% 
   fontsize(size = 10, part = "body") %>% 
   # add footer if you want
-  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-  #                colwidths = 4) %>% 
+   add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+                  colwidths =  ncol(df_cor) + 1) %>% 
   theme_booktabs() %>% # default theme
   set_table_properties(layout = "autofit")
 ```
 
-<!---BLOCK_LANDSCAPE_STOP--->
+\newpage
 
 ```{r EFA screeplot, fig.height = 4, fig.width = 12}
-# EFA screeplot
+# EFA screeplot: pending for now
 
 # EFA <- readModels(file.path(model_file_path,"CS1_EFA.out"))
 # 
@@ -311,6 +277,28 @@ flextable(df %>%
 #   labs(x = "\nComponent Number", y = "Eigenvalue\n", title = "Figure X. Scree plots") + theme_classic();p
 ```
 
+```{r}
+
+model_cfa <- list("CS1_CFA4.out",
+               "CS2_CFA4.out",
+               "CS3_CFA4.out")
+
+
+df_cfa <- map_dfr(lapply(model_cfa, get.fit), bind_rows)
+
+flextable(df_cfa) %>%
+  align(part = "all") %>% # left align
+  font(fontname = "Times", part = "all") %>% 
+  fontsize(size = 10, part = "body") %>% 
+  # add footer if you want
+  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+  #                colwidths = 4) %>% 
+  theme_booktabs() %>% # default theme
+  set_table_properties(layout = "autofit")
+
+```
+
+<!---BLOCK_LANDSCAPE_STOP--->
 
 ## Tables
 

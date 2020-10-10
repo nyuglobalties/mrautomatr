@@ -28,3 +28,16 @@ get.cor <- function(data, string){
   return(df)
 }
 
+
+get.fit <- function(model){
+  
+  output <- as_tibble(readModels(target = file.path(model_file_path,model))$summaries)
+  
+  
+  output <- select(output, Parameters, ChiSqM_Value, ChiSqM_DF, ChiSqM_PValue, CFI, TLI, RMSEA_Estimate, SRMR, Filename)
+  
+  names(output) <- c("k", "ChiSq", "df", "p", "CFI", "TLI", "RMSEA", "SRMR", "Filename")
+  
+  return(output)
+}
+
