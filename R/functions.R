@@ -41,3 +41,51 @@ get.fit <- function(model){
   return(output)
 }
 
+
+get.est <- function(model){
+  
+  output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
+  
+  wave <- paste("T",
+                gsub("^(.*)([0-9])_(.*)$", "\\2", model),
+                ": ",
+                sep = "")
+
+  output <- output %>% 
+              filter(grepl(".BY$", paramHeader)) %>% 
+              select(est) %>% 
+              mutate(est = paste(wave, est, "\n", sep = ""))
+  
+  return(output)
+  
+}
+
+get.modparam <- function(model){
+  
+  output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
+  
+  wave <- paste("_",
+                "T",
+                gsub("^(.*)([0-9])_(.*)$", "\\2", model),
+                sep = "")
+  
+  output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
+  
+  return(output)
+}
+
+
+get.R2 <- function(model){
+  
+  output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$r2)
+  
+  wave <- paste("_",
+                "T",
+                gsub("^(.*)([0-9])_(.*)$", "\\2", model),
+                sep = "")
+  
+  output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
+  
+  
+  return(output)
+}

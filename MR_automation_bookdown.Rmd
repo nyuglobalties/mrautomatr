@@ -16,6 +16,8 @@ output:
 ---
 
 ```{r setup, include = F}
+
+# knitr global settings
 knitr::opts_chunk$set(echo = TRUE, 
                       fig.cap = TRUE,
                       echo = params$printcode, 
@@ -24,6 +26,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       message = F,
                       error = T,
                       results="asis")
+
+# packages
 library(officedown)
 library(officer)
 library(tidyverse)
@@ -31,7 +35,6 @@ library(psych)
 library(MplusAutomation)
 library(gridExtra)
 library(semPlot)
-library(kableExtra)
 library(flextable)
 
 fp <- fp_par(
@@ -42,6 +45,7 @@ fp <- fp_par(
 ft <- fp_text(shading.color='#EFEFEF', 
               bold = TRUE)
 
+# functions to generate the report
 source("R/functions.R")
 ```
 
@@ -51,8 +55,10 @@ year <- "Lebanon Year 1 (2016-2017)"
 ```
 
 ```{r user input data, include = F}
+# file path to the master dataset
 data_file_path <- "~/Box/3EA Analysis/3EA Lebanon_Analysis/Lebanon_Y1_FA/LBY1_PREIMPUTED_FULL_SPREAD_10-31-2019_mplus.dta"
 
+# a list of all items for the current construct (ordered by wave)
 subset_data <- Hmisc::Cs(
                 HB1_AB_1, HB2_AB_1, HB3_AB_1, HB4_AB_1, HB5_AB_1, HB6_AB_1, 
                 HB1_AD_1, HB2_AD_1, HB3_AD_1, HB4_AD_1, HB5_AD_1, HB6_AD_1, 
@@ -69,9 +75,10 @@ subset_data <- Hmisc::Cs(
                 HB1_SD_3, HB2_SD_3, HB3_SD_3, HB4_SD_3, HB5_SD_3, HB6_SD_3, 
                 HB1_AR_3, HB2_AR_3, HB3_AR_3, HB4_AR_3, HB5_AR_3, HB6_AR_3)
 
-
+# file path to all Mplus model outputs
 model_file_path <- "~/Box/For Zezhen/MR automation/Test Data"
 
+# a list of CFA models (ordered by wave)
 model_cfa <- list("CS1_CFA4.out",
                "CS2_CFA4.out",
                "CS3_CFA4.out")
@@ -85,8 +92,16 @@ model_lg_inv_scalar = "CS123_CFA4_inv_scalar.out"
 ```
 
 ```{r data preparation, include = F}
-dat <- haven::read_dta(data_file_path)
+# read in data (currently accepting dta, xlsx and csv)
+dat <- if(grepl(".dta$", data_file_path)){
+    haven::read_dta(data_file_path)
+} else if(grepl(".xlsx$", data_file_path)){
+  openxlsx::read.xlsx(data_file_path)
+} else if(grepl(".csv$", data_file_path)){
+  read_csv(data_file_path)
+}
 
+# subset of only items for the current construct
 dat.s <- as.data.frame(select(dat, all_of(subset_data)))
 ```
 
@@ -127,20 +142,21 @@ TBD...
 
 see Table \@ref(tab:descriptive).
 
-```{r descriptive, tab.cap="Descriptive Statistics", tab.id = "descriptive"}
-ds <- describe(dat.s) %>% 
-  as.data.frame() %>%
-  round(digits = 3) %>%
-  rownames_to_column("variable")
+```{r descriptive, tab.cap="Descriptive statistics", tab.id = "descriptive"}
+ds <- skimr::skim(dat.s) %>% 
+  mutate_if(is.numeric, round, 3) %>%
+  select(-skim_type) %>%
+  rename_with( ~ gsub("^(numeric.)(.*)$", "\\2", .x), starts_with("numeric.")) %>%
+  rename(variable = skim_variable, histgram = hist)
+  
 
 flextable(ds) %>%
-  align(part = "all") %>% # left align
+  align(part = "all") %>%
   font(fontname = "Times", part = "all") %>% 
+  bold(part = "header") %>%
+  italic(j = 6:10, part = "header") %>%
   fontsize(size = 10, part = "body") %>% 
-  # add footer if you want
-  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-  #                colwidths = 4) %>% 
-  theme_booktabs() %>% # default theme
+  line_spacing(space = 1) %>%
   set_table_properties(layout = "autofit")
 
 
@@ -150,9 +166,8 @@ flextable(ds) %>%
 
 <!---BLOCK_LANDSCAPE_STOP--->
 
-see Figure \@ref(fig:ds_plot).
 
-```{r ds_plot, fig.cap = "",fig.id = "ds_plot", fig.height = 8, fig.width = 6}
+```{r ds_plot, fig.cap = "",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300}
 
 # descriptive plots
 
@@ -164,10 +179,10 @@ chunk_num <- ncol(dat.s) %/% 24
 while (chunk_num >= 1) {
   for (i in 1:24) {
     index <- 24*(chunk_num - 1) + i
-    
-    hist(dat.s[, index], main = "", xlab = names(dat.s)[index])
+
+    hist(dat.s[, index], main = "", xlab = names(dat.s)[index], col = "white")
   }
-  
+
   chunk_num <- chunk_num - 1
 }
 
@@ -179,7 +194,7 @@ while (chunk_num >= 1) {
 ### Internal Reliability and Correlations
 
 
-```{r internal_reliability, tab.cap = "Internal Reliability", tab.id = "internal_reliability"}
+```{r internal_reliability, tab.cap = "Internal reliability", tab.id = "internal_reliability"}
 
 # 4. Internal reliability ####
 # (example: https://rpubs.com/hauselin/reliabilityanalysis)
@@ -190,46 +205,36 @@ alpha_drop <- alpha_stats$alpha.drop
 flextable(alpha_drop %>% 
             round(digits = 3) %>%
             rownames_to_column("variable")) %>%
-  align(part = "all") %>% # left align
+  align(part = "all") %>%
   font(fontname = "Times", part = "all") %>% 
+  bold(part = "header") %>%
   fontsize(size = 10, part = "body") %>% 
-  # add footer if you want
-  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-  #                colwidths = 4) %>% 
-  theme_booktabs() %>% # default theme
   set_table_properties(layout = "autofit")
 ```
 
 \newpage
 
-```{r summary_item_statistics, tab.cap = "Summary Item Statistics", tab.id = "summary_item_statistics"}
+```{r summary_item_statistics, tab.cap = "Summary item statistics", tab.id = "summary_item_statistics"}
 flextable(alpha_stats$item.stats %>% 
             round(digits = 3) %>%
             rownames_to_column("variable")) %>%
-  align(part = "all") %>% # left align
-  font(fontname = "Times", part = "all") %>% 
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
   fontsize(size = 10, part = "body") %>% 
-  # add footer if you want
-  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-  #                colwidths = 4) %>% 
-  theme_booktabs() %>% # default theme
   set_table_properties(layout = "autofit")
 ```
 
 \newpage
 
-```{r item_total_statistics, tab.cap = "Item Total Statistics", tab.id = "item_total_statistics"}
+```{r item_total_statistics, tab.cap = "Item total statistics", tab.id = "item_total_statistics"}
 
 flextable(alpha_stats$total %>%
-            round(digits = 3) %>%
-            rownames_to_column("variable")) %>%
-  align(part = "all") %>% # left align
+            round(digits = 3)) %>%
+  align(part = "all") %>%
   font(fontname = "Times", part = "all") %>% 
+  bold(part = "header") %>%
   fontsize(size = 10, part = "body") %>% 
-  # add footer if you want
-  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-  #                colwidths = 4) %>% 
-  theme_booktabs() %>% # default theme
   set_table_properties(layout = "autofit")
 
 ```
@@ -237,26 +242,33 @@ flextable(alpha_stats$total %>%
 \newpage
 
 <!---BLOCK_LANDSCAPE_START--->
-```{r correlation_matrix, tab.cap = "Correlation Matrix", tab.id = "correlation_matrix"}
+```{r correlation_matrix, tab.cap = "Correlation matrix", tab.id = "correlation_matrix"}
 # Correlation matrix
 
 df_cor <- get.cor(data = suppressWarnings(readModels(target = file.path(model_file_path,model_lg_inv_scalar))), 
              string = ".WITH$")
 
-flextable(df_cor %>%
-            rownames_to_column("Variable")) %>%
-  align(part = "all") %>% # left align
-  font(fontname = "Times", part = "all") %>% 
-  fontsize(size = 10, part = "body") %>% 
-  # add footer if you want
+df_cor <- df_cor %>%
+            rownames_to_column("variable") %>%
+            rename(" " = variable)
+
+flextable(df_cor) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "body") %>%
+  bold(part = "header") %>%
+  bold(j = " ", part = "body") %>%
+  fontsize(size = 10, part = "all") %>% 
    add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-                  colwidths =  ncol(df_cor) + 1) %>% 
-  theme_booktabs() %>% # default theme
+                  colwidths =  ncol(df_cor)) %>% 
+  italic(part = "footer") %>%
   set_table_properties(layout = "autofit")
 ```
 
 \newpage
 
+## Factor Analysis
+
+### EFA and CFA
 ```{r EFA screeplot, fig.height = 4, fig.width = 12}
 # EFA screeplot: pending for now
 
@@ -277,29 +289,70 @@ flextable(df_cor %>%
 #   labs(x = "\nComponent Number", y = "Eigenvalue\n", title = "Figure X. Scree plots") + theme_classic();p
 ```
 
-```{r}
-
-model_cfa <- list("CS1_CFA4.out",
-               "CS2_CFA4.out",
-               "CS3_CFA4.out")
-
+```{r, cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit"}
 
 df_cfa <- map_dfr(lapply(model_cfa, get.fit), bind_rows)
 
 flextable(df_cfa) %>%
-  align(part = "all") %>% # left align
-  font(fontname = "Times", part = "all") %>% 
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  italic(j = 4, part = "header") %>%
   fontsize(size = 10, part = "body") %>% 
-  # add footer if you want
-  # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-  #                colwidths = 4) %>% 
-  theme_booktabs() %>% # default theme
+  set_table_properties(layout = "autofit")
+
+```
+
+```{r, cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300}
+
+plot_label <- map_dfc(lapply(model_cfa, get.est), bind_cols) %>%
+  unite("label", everything(), sep = "")
+
+model_cfa_str <- readModels(file.path(model_file_path, model_cfa[[1]]))
+
+par(mfrow = c(1,1))
+semPaths(model_cfa_str, style="lisrel", layout = "tree",
+         nCharNodes = 5, sizeMan = 4, sizeMan2 = 4, sizeLat = 8, 
+         thresholds = F, residuals = F, intercepts = F, edge.color = "gray40", edgeLabels = plot_label$label, edge.label.cex = 0.3,edge.label.position = 0.8, label.cex = 1, mar=c(1,1,3,1))
+
+```
+
+\newpage
+
+```{r CFA_model_parameters, tab.cap = "CFA model parameters at all waves", tab.id = "CFA_model_parameters"}
+df_cfa_modparam <- lapply(model_cfa, get.modparam) %>% 
+  reduce(left_join, by = c("paramHeader", "param"))
+
+flextable(df_cfa_modparam) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r cfa_r2, tab.cap = "CFA model R-squared at all waves", tab.id = "CFA_r2"}
+
+df_cfa_r2 <- lapply(model_cfa, get.R2) %>% 
+  reduce(left_join, by = c("param"))
+
+flextable(df_cfa_r2) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
   set_table_properties(layout = "autofit")
 
 ```
 
 <!---BLOCK_LANDSCAPE_STOP--->
 
+### Measurement Invariance
+
+
+#s
 ## Tables
 
 ### Table 1
