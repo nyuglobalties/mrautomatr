@@ -1,3 +1,13 @@
+# suppress cat messages from MplusAutomation
+sup.cat <- function(myfunction){
+  
+  log <- capture.output({
+    res <- myfunction}
+    )
+  print(res)
+}
+
+# get correlation matrix
 get.cor <- function(data, string){
   x <- data$parameters$stdyx.standardized
   x <- x[grepl(string,x$paramHeader),]
@@ -28,7 +38,7 @@ get.cor <- function(data, string){
   return(df)
 }
 
-
+# get CFA model fit
 get.fit <- function(model){
   
   output <- as_tibble(readModels(target = file.path(model_file_path,model))$summaries)
@@ -41,7 +51,7 @@ get.fit <- function(model){
   return(output)
 }
 
-
+# get CFA model estimate (for plotting)
 get.est <- function(model){
   
   output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
@@ -60,6 +70,7 @@ get.est <- function(model){
   
 }
 
+# get CFA model parameters
 get.modparam <- function(model){
   
   output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
@@ -74,7 +85,7 @@ get.modparam <- function(model){
   return(output)
 }
 
-
+# get CFA R-squared
 get.R2 <- function(model){
   
   output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$r2)
@@ -89,3 +100,40 @@ get.R2 <- function(model){
   
   return(output)
 }
+
+
+# check if mplus is in version 8
+check.mplus.version <- function(model){
+  
+  if(as.numeric(model$Mplus.version) >= 8){ # (Column `SRMR` doesn't exist. because the models output from Mplus 7 don't have SRMR)
+    model.s <- select(model, Parameters:RMSEA_Estimate, SRMR, Filename)} else{
+      warning("Upgrade Mplus to Version 8 to include SRMR as a model fit index. Mplus Version 7 reports WRMR instead.")
+      model.s <- select(model, Parameters:RMSEA_Estimate, WRMR, Filename)    
+      }
+  
+  return(model.s)
+}
+
+
+# get measurement invariance model fits
+
+get.invariance <- function(inv_models){
+  
+  config = inv_models[1]
+  metric = inv_models[2]
+  scalar = inv_models[3]
+  
+  output_config <-as_tibble(readModels(target = file.path(model_file_path,config))$summaries)
+  output_metric <-as_tibble(readModels(target = file.path(model_file_path,metric))$summaries)
+  output_scalar <-as_tibble(readModels(target = file.path(model_file_path,scalar))$summaries)
+  
+  output_config <- check.mplus.version(output_config)
+  output_metric <- check.mplus.version(output_metric)
+  output_scalar <- check.mplus.version(output_scalar)
+  
+  output <- bind_rows(output_config, output_metric, output_scalar)
+  output <- select(output, -c(CFI:Filename), CFI:Filename)
+
+  return(output)
+}
+

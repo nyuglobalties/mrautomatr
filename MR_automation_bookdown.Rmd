@@ -84,9 +84,57 @@ model_cfa <- list("CS1_CFA4.out",
                "CS3_CFA4.out")
 
 
+# a list of treatment invariance models (config, metric and scalar; ordered by wave)
+model_inv_tx <- list(
+  c("CS1_CFA4_tx_inv_config.out",
+    "CS1_CFA4_tx_inv_metric.out",
+    "CS1_CFA4_tx_inv_scalar.out"),
 
-model_lg_inv_scalar = "CS123_CFA4_inv_scalar.out"
+  c("CS2_CFA4_tx_inv_config.out",
+    "CS2_CFA4_tx_inv_metric.out",
+    "CS2_CFA4_tx_inv_scalar.out"),
 
+  c("CS3_CFA4_tx_inv_config.out",
+    "CS3_CFA4_tx_inv_metric.out",
+    "CS3_CFA4_tx_inv_scalar.out")
+  )
+
+# a list of gender invariance models (config, metric and scalar; ordered by wave)
+model_inv_gender <- list(
+  c("CS1_CFA4_Gender_inv_config.out",
+  "CS1_CFA4_Gender_inv_metric.out",
+  "CS1_CFA4_Gender_inv_scalar.out"),
+
+  c("CS2_CFA4_Gender_inv_config.out",
+  "CS2_CFA4_Gender_inv_metric.out",
+  "CS2_CFA4_Gender_inv_scalar.out"),
+
+  c("CS3_CFA4_Gender_inv_config.out",
+  "CS3_CFA4_Gender_inv_metric.out",
+  "CS3_CFA4_Gender_inv_scalar.out")
+  )
+
+# a list of age invariance models (config, metric and scalar; ordered by wave)
+model_inv_age <- list(
+  c("CS1_CFA4_Age_inv_config.out",
+  "CS1_CFA4_Age_inv_metric.out",
+  "CS1_CFA4_Age_inv_scalar.out"),
+
+  c("CS2_CFA4_Age_inv_config.out",
+  "CS2_CFA4_Age_inv_metric.out",
+  "CS2_CFA4_Age_inv_scalar.out"),
+
+  c("CS3_CFA4_Age_inv_config.out",
+  "CS3_CFA4_Age_inv_metric.out",
+  "CS3_CFA4_Age_inv_scalar.out")
+  )
+
+# the longitudinal invariance model
+model_lg_inv <- list(
+  "CS123_CFA4_inv_config.out",
+  "CS123_CFA4_inv_metric.out",
+  "CS123_CFA4_inv_scalar.out"
+)
 
 
 ```
@@ -245,7 +293,7 @@ flextable(alpha_stats$total %>%
 ```{r correlation_matrix, tab.cap = "Correlation matrix", tab.id = "correlation_matrix"}
 # Correlation matrix
 
-df_cor <- get.cor(data = suppressWarnings(readModels(target = file.path(model_file_path,model_lg_inv_scalar))), 
+df_cor <- get.cor(data = suppressWarnings(readModels(target = file.path(model_file_path,model_lg_inv[[3]]))), # the third item should be the scalar model
              string = ".WITH$")
 
 df_cor <- df_cor %>%
@@ -294,6 +342,10 @@ flextable(df_cor) %>%
 df_cfa <- map_dfr(lapply(model_cfa, get.fit), bind_rows)
 
 flextable(df_cfa) %>%
+    compose(
+    part = "header", j = "ChiSq",
+    value = as_paragraph("\U03C7",as_sup("2"))
+    ) %>%
   align(part = "all") %>%
   font(fontname = "Times", part = "all") %>%
   bold(part = "header") %>%
@@ -346,12 +398,155 @@ flextable(df_cfa_r2) %>%
   set_table_properties(layout = "autofit")
 
 ```
-
-<!---BLOCK_LANDSCAPE_STOP--->
+\newpage
 
 ### Measurement Invariance
 
+```{r inv_tx, tab.cap = "Treatment group invariance model fit", tab.id = "inv_tx"}
 
+df_inv_tx <- map_dfr(lapply(model_inv_tx, get.invariance), bind_rows)
+
+flextable(df_inv_tx) %>% 
+  compose(
+    part = "header", j = "ChiSqM_Value",
+    value = as_paragraph("\U03C7",as_sup("2"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = as_paragraph("\U03C7",as_sup("2"), as_sub("B"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = as_paragraph(paste("\u0394","\U03C7", sep = ""), as_sup("2"))
+    ) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  italic(j = c(4,7,10), part = "header") %>%
+  set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  set_table_properties(layout = "autofit")
+
+```
+\newpage
+```{r inv_gender, tab.cap = "Gender invariance model fit", tab.id = "inv_gender"}
+
+df_inv_gender <- map_dfr(lapply(model_inv_gender, get.invariance), bind_rows)
+
+flextable(df_inv_gender) %>% 
+  compose(
+    part = "header", j = "ChiSqM_Value",
+    value = as_paragraph("\U03C7",as_sup("2"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = as_paragraph("\U03C7",as_sup("2"), as_sub("B"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = as_paragraph(paste("\u0394","\U03C7", sep = ""), as_sup("2"))
+    ) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  italic(j = c(4,7,10), part = "header") %>%
+  set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  set_table_properties(layout = "autofit")
+
+```
+\newpage
+```{r inv_age, tab.cap = "Age invariance model fit", tab.id = "inv_age"}
+
+df_inv_age <- map_dfr(lapply(model_inv_age, get.invariance), bind_rows)
+
+flextable(df_inv_age) %>% 
+  compose(
+    part = "header", j = "ChiSqM_Value",
+    value = as_paragraph("\U03C7",as_sup("2"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = as_paragraph("\U03C7",as_sup("2"), as_sub("B"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = as_paragraph(paste("\u0394","\U03C7", sep = ""), as_sup("2"))
+    ) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  italic(j = c(4,7,10), part = "header") %>%
+  set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  set_table_properties(layout = "autofit")
+
+```
+\newpage
+```{r inv_lg, tab.cap = "Longitudinal invariance model fit", tab.id = "inv_lg"}
+
+df_inv_lg <- get.invariance(model_lg_inv)
+
+flextable(df_inv_lg) %>% 
+  compose(
+    part = "header", j = "ChiSqM_Value",
+    value = as_paragraph("\U03C7",as_sup("2"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = as_paragraph("\U03C7",as_sup("2"), as_sub("B"))
+    ) %>%
+  compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = as_paragraph(paste("\u0394","\U03C7", sep = ""), as_sup("2"))
+    ) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  italic(j = c(4,7,10), part = "header") %>%
+  set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  set_table_properties(layout = "autofit")
+
+```
+
+<!---BLOCK_LANDSCAPE_STOP--->
 #s
 ## Tables
 
