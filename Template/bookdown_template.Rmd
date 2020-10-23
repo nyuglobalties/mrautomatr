@@ -6,7 +6,6 @@ output:
   officedown::rdocx_document:
     mapstyles:
       Normal: ['First Paragraph']
-    reference_docx: "MR_word_template.docx"
 ---
 
 ```{r setup, include=FALSE}

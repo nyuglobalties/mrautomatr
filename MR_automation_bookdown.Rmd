@@ -18,14 +18,21 @@ output:
 ```{r setup, include = F}
 
 # knitr global settings
-knitr::opts_chunk$set(echo = TRUE, 
-                      fig.cap = TRUE,
-                      echo = params$printcode, 
-                      warning = params$printwarning, 
-                      cache = params$storecache,
-                      message = F,
-                      error = T,
-                      results="asis")
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  fig.cap = TRUE,
+  echo = params$printcode, 
+  warning = params$printwarning, 
+  cache = params$storecache,
+  message = F,
+  error = T,
+  results="asis",
+  tab.cap.style = "Table Caption",
+  tab.cap.pre = "Table ",
+  tab.cap.sep = ": ",
+  fig.cap.style = "Image Caption",
+  fig.cap.pre = "Figure ",
+  fig.cap.sep = ": ")
 
 # packages
 library(officedown)
@@ -58,22 +65,29 @@ year <- "Lebanon Year 1 (2016-2017)"
 # file path to the master dataset
 data_file_path <- "~/Box/3EA Analysis/3EA Lebanon_Analysis/Lebanon_Y1_FA/LBY1_PREIMPUTED_FULL_SPREAD_10-31-2019_mplus.dta"
 
-# a list of all items for the current construct (ordered by wave)
-subset_data <- Hmisc::Cs(
-                HB1_AB_1, HB2_AB_1, HB3_AB_1, HB4_AB_1, HB5_AB_1, HB6_AB_1, 
-                HB1_AD_1, HB2_AD_1, HB3_AD_1, HB4_AD_1, HB5_AD_1, HB6_AD_1, 
-                HB1_SD_1, HB2_SD_1, HB3_SD_1, HB4_SD_1, HB5_SD_1, HB6_SD_1, 
-                HB1_AR_1, HB2_AR_1, HB3_AR_1, HB4_AR_1, HB5_AR_1, HB6_AR_1, 
-                
-                HB1_AB_2, HB2_AB_2, HB3_AB_2, HB4_AB_2, HB5_AB_2, HB6_AB_2, 
-                HB1_AD_2, HB2_AD_2, HB3_AD_2, HB4_AD_2, HB5_AD_2, HB6_AD_2, 
-                HB1_SD_2, HB2_SD_2, HB3_SD_2, HB4_SD_2, HB5_SD_2, HB6_SD_2, 
-                HB1_AR_2, HB2_AR_2, HB3_AR_2, HB4_AR_2, HB5_AR_2, HB6_AR_2,
-                
-                HB1_AB_3, HB2_AB_3, HB3_AB_3, HB4_AB_3, HB5_AB_3, HB6_AB_3, 
-                HB1_AD_3, HB2_AD_3, HB3_AD_3, HB4_AD_3, HB5_AD_3, HB6_AD_3, 
-                HB1_SD_3, HB2_SD_3, HB3_SD_3, HB4_SD_3, HB5_SD_3, HB6_SD_3, 
-                HB1_AR_3, HB2_AR_3, HB3_AR_3, HB4_AR_3, HB5_AR_3, HB6_AR_3)
+# specify items for each subscale, without wave subscript (ordered by wave)
+# Hmisc has conflict with psych
+subscale_data <- 
+  list(
+  HAB_1 = Hmisc::Cs(HB1_AB_1, HB2_AB_1, HB3_AB_1, HB4_AB_1, HB5_AB_1, HB6_AB_1),
+  AD_1 = Hmisc::Cs(HB1_AD_1, HB2_AD_1, HB3_AD_1, HB4_AD_1, HB5_AD_1, HB6_AD_1),
+  SD_1 = Hmisc::Cs(HB1_SD_1, HB2_SD_1, HB3_SD_1, HB4_SD_1, HB5_SD_1, HB6_SD_1),
+  AR_1 = Hmisc::Cs(HB1_AR_1, HB2_AR_1, HB3_AR_1, HB4_AR_1, HB5_AR_1, HB6_AR_1),
+  
+  HAB_2 = Hmisc::Cs(HB1_AB_2, HB2_AB_2, HB3_AB_2, HB4_AB_2, HB5_AB_2, HB6_AB_2),
+  AD_2 = Hmisc::Cs(HB1_AD_2, HB2_AD_2, HB3_AD_2, HB4_AD_2, HB5_AD_2, HB6_AD_2),
+  SD_2 = Hmisc::Cs(HB1_SD_2, HB2_SD_2, HB3_SD_2, HB4_SD_2, HB5_SD_2, HB6_SD_2),
+  AR_2 = Hmisc::Cs(HB1_AR_2, HB2_AR_2, HB3_AR_2, HB4_AR_2, HB5_AR_2, HB6_AR_2),
+  
+  HAB_3 = Hmisc::Cs(HB1_AB_3, HB2_AB_3, HB3_AB_3, HB4_AB_3, HB5_AB_3, HB6_AB_3),
+  AD_3 = Hmisc::Cs(HB1_AD_3, HB2_AD_3, HB3_AD_3, HB4_AD_3, HB5_AD_3, HB6_AD_3),
+  SD_3 = Hmisc::Cs(HB1_SD_3, HB2_SD_3, HB3_SD_3, HB4_SD_3, HB5_SD_3, HB6_SD_3),
+  AR_3 = Hmisc::Cs(HB1_AR_3, HB2_AR_3, HB3_AR_3, HB4_AR_3, HB5_AR_3, HB6_AR_3)
+  )
+
+# a list of all items for the current construct 
+subset_data <- as.character(unlist(subscale_data))
+
 
 # file path to all Mplus model outputs
 model_file_path <- "~/Box/For Zezhen/MR automation/Test Data"
@@ -150,7 +164,12 @@ dat <- if(grepl(".dta$", data_file_path)){
 }
 
 # subset of only items for the current construct
-dat.s <- as.data.frame(select(dat, all_of(subset_data)))
+dat_s <- as.data.frame(select(dat, all_of(subset_data)))
+
+# subscale and its corresponding item names
+subscale_item_name <- as.data.frame(subscale_data) %>%
+  gather(key = "subscale", value = "item")
+
 ```
 
 \newpage
@@ -178,12 +197,14 @@ This document presents most of the features of the package `r ftext("officedown"
 
 This report presents descriptive and psychometric information of the measures used for `r year`.
 
+\newpage
+
 ## Method
 
 TBD...
 
+\newpage
 
-<!---BLOCK_LANDSCAPE_START--->
 ## Results
 
 ### Descriptive Statistics
@@ -191,11 +212,11 @@ TBD...
 see Table \@ref(tab:descriptive).
 
 ```{r descriptive, tab.cap="Descriptive statistics", tab.id = "descriptive"}
-ds <- skimr::skim(dat.s) %>% 
+ds <- skimr::skim(dat_s) %>% 
   mutate_if(is.numeric, round, 3) %>%
-  select(-skim_type) %>%
   rename_with( ~ gsub("^(numeric.)(.*)$", "\\2", .x), starts_with("numeric.")) %>%
-  rename(variable = skim_variable, histgram = hist)
+  select(-skim_type, -hist) %>%
+  rename(variable = skim_variable)
   
 
 flextable(ds) %>%
@@ -210,25 +231,21 @@ flextable(ds) %>%
 
 ```
 
-
-
-<!---BLOCK_LANDSCAPE_STOP--->
-
-
-```{r ds_plot, fig.cap = "",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300}
+\newpage
+```{r ds_plot, fig.cap = "Item distribution",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300}
 
 # descriptive plots
 
 par(mfrow = c(6,6),
     mar = c(4,1,1,1))
 
-chunk_num <- ncol(dat.s) %/% 24
+chunk_num <- ncol(dat_s) %/% 24
 
 while (chunk_num >= 1) {
   for (i in 1:24) {
     index <- 24*(chunk_num - 1) + i
 
-    hist(dat.s[, index], main = "", xlab = names(dat.s)[index], col = "white")
+    hist(dat_s[, index], main = "", xlab = names(dat_s)[index], col = "white")
   }
 
   chunk_num <- chunk_num - 1
@@ -239,61 +256,12 @@ while (chunk_num >= 1) {
 
 \newpage
 
-### Internal Reliability and Correlations
-
-
-```{r internal_reliability, tab.cap = "Internal reliability", tab.id = "internal_reliability"}
-
-# 4. Internal reliability ####
-# (example: https://rpubs.com/hauselin/reliabilityanalysis)
-alpha_stats <- alpha(dat.s)
-
-alpha_drop <- alpha_stats$alpha.drop
-
-flextable(alpha_drop %>% 
-            round(digits = 3) %>%
-            rownames_to_column("variable")) %>%
-  align(part = "all") %>%
-  font(fontname = "Times", part = "all") %>% 
-  bold(part = "header") %>%
-  fontsize(size = 10, part = "body") %>% 
-  set_table_properties(layout = "autofit")
-```
-
-\newpage
-
-```{r summary_item_statistics, tab.cap = "Summary item statistics", tab.id = "summary_item_statistics"}
-flextable(alpha_stats$item.stats %>% 
-            round(digits = 3) %>%
-            rownames_to_column("variable")) %>%
-  align(part = "all") %>%
-  font(fontname = "Times", part = "all") %>%
-  bold(part = "header") %>%
-  fontsize(size = 10, part = "body") %>% 
-  set_table_properties(layout = "autofit")
-```
-
-\newpage
-
-```{r item_total_statistics, tab.cap = "Item total statistics", tab.id = "item_total_statistics"}
-
-flextable(alpha_stats$total %>%
-            round(digits = 3)) %>%
-  align(part = "all") %>%
-  font(fontname = "Times", part = "all") %>% 
-  bold(part = "header") %>%
-  fontsize(size = 10, part = "body") %>% 
-  set_table_properties(layout = "autofit")
-
-```
-
-\newpage
 
 <!---BLOCK_LANDSCAPE_START--->
 ```{r correlation_matrix, tab.cap = "Correlation matrix", tab.id = "correlation_matrix"}
 # Correlation matrix
 
-df_cor <- get.cor(data = suppressWarnings(readModels(target = file.path(model_file_path,model_lg_inv[[3]]))), # the third item should be the scalar model
+df_cor <- get.cor(model = model_lg_inv[[3]], # the third item should be the scalar model
              string = ".WITH$")
 
 df_cor <- df_cor %>%
@@ -355,6 +323,7 @@ flextable(df_cfa) %>%
 
 ```
 
+\newpage
 ```{r, cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300}
 
 plot_label <- map_dfc(lapply(model_cfa, get.est), bind_cols) %>%
@@ -398,7 +367,110 @@ flextable(df_cfa_r2) %>%
   set_table_properties(layout = "autofit")
 
 ```
+
 \newpage
+
+### Internal Reliability and Correlations
+
+
+```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability"}
+
+# (example: https://rpubs.com/hauselin/reliabilityanalysis)
+
+# ## under development..
+# index <- as.numeric(unique(gsub("^(.*)(\\d)$", "\\2",names(dat_s))))
+# 
+# alpha_list <- list()
+# 
+# for (i in index) {
+#   
+#   alpha_list[[i]] <- select(dat_s, ends_with(as.character(i)))
+#   
+# }
+# 
+# ###
+
+alpha_drop = list()
+
+for(i in 1:length(subscale_data)){
+  
+ alpha_drop[[i]] <- alpha(select(dat_s, all_of(subscale_data[[i]])))$alpha.drop
+  
+}
+
+
+alpha_drop <- map_dfr(alpha_drop, bind_rows) %>% 
+            round(digits = 3) %>%
+            rownames_to_column("item") %>%
+  left_join(subscale_item_name, by = "item") %>%
+  select(subscale, everything())
+
+flextable(alpha_drop) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>% 
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  set_table_properties(layout = "autofit")
+
+
+```
+
+\newpage
+
+```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics"}
+
+item_stats = list()
+
+for(i in 1:length(subscale_data)){
+  
+ item_stats[[i]] <- alpha(select(dat_s, all_of(subscale_data[[i]])))$item.stats
+  
+}
+
+item_stats <- map_dfr(item_stats, bind_rows) %>% 
+            round(digits = 3) %>%
+            rownames_to_column("item") %>%
+  left_join(subscale_item_name, by = "item") %>%
+  select(subscale, everything())
+
+flextable(item_stats) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r item_total_statistics, tab.cap = "Item total statistics", tab.id = "item_total_statistics"}
+
+total_stats = list()
+
+for(i in 1:length(subscale_data)){
+  
+ total_stats[[i]] <- alpha(select(dat_s, all_of(subscale_data[[i]])))$total
+  
+}
+
+total_stats <- map_dfr(total_stats, bind_rows) %>% 
+            round(digits = 3) %>%
+            mutate(subscale = unique(subscale_item_name$subscale)) %>%
+  left_join(get.omega(model_lg_inv[[3]]), by = "subscale") %>% # merge in omega squared 
+  select(subscale, omega, everything())
+
+flextable(total_stats) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>% 
+  bold(part = "header") %>%
+  fontsize(size = 10, part = "body") %>% 
+  set_table_properties(layout = "autofit")
+
+```
+
+
+\newpage
+
 
 ### Measurement Invariance
 
@@ -547,83 +619,9 @@ flextable(df_inv_lg) %>%
 ```
 
 <!---BLOCK_LANDSCAPE_STOP--->
-#s
-## Tables
-
-### Table 1
-
-
-```{r tab.cap="caption 1", tab.id="mtcars"}
-head(mtcars)
-```
-
-### Table 2
-
-```{r tab.cap="iris"}
-head(iris)
-```
-
-### Table 3
-
-```{r tab.cap="cars", tab.id="cars"}
-head(cars)
-```
-
-
-## figures 
-
-
-### A boxplot
-
-```{r fig.cap="A boxplot", fig.id = "boxplot"}
-boxplot(1:8)
-```
-
-### A barplot
-
-```{r fig.cap="What a barplot", fig.id = "barplot"}
-barplot(1:8)
-```
-
-## Lists
-
-Amet nunc eros curabitur tellus massa, eros maximus porttitor sociosqu, pellentesque.
-
-* Erat mauris egestas finibus tincidunt sed in rhoncus a tellus etiam. 
-    - A adipiscing per ultricies justo tellus lorem. 
-        - Imperdiet ut dui primis, sed gravida, at sed nulla. 
-        - Sem posuere lacus consequat inceptos dapibus duis malesuada finibus. 
-    - Urna sed dui, ornare, eu turpis mus pellentesque amet amet bibendum. 
-* Himenaeos tincidunt, auctor dapibus scelerisque, montes nunc faucibus 
-sodales malesuada ridiculus sed cubilia ligula.
-
-
-1. Erat mauris egestas finibus tincidunt sed in rhoncus a tellus etiam. 
-    1. A adipiscing per ultricies justo tellus lorem. 
-        1. Imperdiet ut dui primis, sed gravida, at sed nulla. 
-        2. Sem posuere lacus consequat inceptos dapibus duis malesuada finibus. 
-    2. Urna sed dui, ornare, eu turpis mus pellentesque amet amet bibendum. 
-2. Himenaeos tincidunt, auctor dapibus scelerisque, montes nunc faucibus 
-sodales malesuada ridiculus sed cubilia ligula.
-
-
-Lorem dolor interdum orci eros pellentesque semper tristique, sodales, et sed
-ut! Porta mattis natoque et. Ac facilisi ipsum viverra elementum vestibulum
-ligula amet enim magnis luctus ullamcorper. Rhoncus rhoncus elit in at nisl.
-Tincidunt habitant sit.
-
-
-* Aptent conubia quam montes id sagittis.
-    - Mattis nisi nascetur, aliquam duis ex, tristique.
-        - Imperdiet ut dui primis, sed gravida, at sed nulla. 
-        - Donec ligula nulla ac. Nisl ac at accumsan sagittis eros felis lobortis amet 
-        nec phasellus urna bibendum sapien.
-    - Eu dui ac id, dictum proin consectetur convallis.
-* Facilisi eu lectus mauris lorem. Et sed sapien pellentesque sed etiam vehicula. 
-* In porttitor id lorem eu efficitur, nisl dis!
 
 
 ## Reference
 
-see figure \@ref(fig:boxplot) and table \@ref(tab:mtcars)!
+TBD...
 

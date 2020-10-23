@@ -8,7 +8,8 @@ sup.cat <- function(myfunction){
 }
 
 # get correlation matrix
-get.cor <- function(data, string){
+get.cor <- function(model, string){
+  data <- readModels(target = file.path(model_file_path,model))
   x <- data$parameters$stdyx.standardized
   x <- x[grepl(string,x$paramHeader),]
   x$paramHeader <- substr(x$paramHeader, 1, nchar(x$paramHeader)-5)
@@ -137,3 +138,48 @@ get.invariance <- function(inv_models){
   return(output)
 }
 
+# function to calculate omega squared from CFA models
+calc.omega <- function(loadings, resid){
+  
+  omega <- (sum(loadings, na.rm = T))^2 / ( (sum(loadings, na.rm = T))^2 + sum(resid, na.rm = T) )
+  omega <- round(omega, digits = 3)
+  
+  return(omega)
+  
+}
+
+
+# get omega squared from longitudinal invariance model
+get.omega <- function(model){
+  
+
+  df <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
+  
+  df <- df %>% 
+    mutate(type = gsub("(.*)(_)(.*)(\\.)(.*)", "\\5", paramHeader)) %>%
+    filter(type %in% c("BY", "Residual.Variances")) %>% 
+    group_by(type) %>%
+    group_split()
+  
+  df <- left_join(df[[1]] %>% 
+                        select(paramHeader, param, est) %>%
+                        rename(loadings = est),
+                      
+                  df[[2]] %>%
+                        select(param, est) %>%
+                        rename(resid = est),
+                      
+                      by = "param"
+                      )
+ 
+   output <- df %>% 
+    group_by(paramHeader) %>%
+    summarize(omega = calc.omega(loadings, resid)) %>%
+    mutate(subscale = gsub("^(.*)(_)([0-9])(.BY)$","\\1\\2\\3", paramHeader)
+           ) %>%
+     select(subscale, omega)
+     
+    
+  return(output)
+  
+}
