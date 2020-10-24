@@ -168,7 +168,11 @@ dat_s <- as.data.frame(select(dat, all_of(subset_data)))
 
 # subscale and its corresponding item names
 subscale_item_name <- as.data.frame(subscale_data) %>%
-  gather(key = "subscale", value = "item")
+  gather(key = "subscale", value = "item") %>%
+  mutate(wave = gsub("(.*)(_)([0-9])", "\\3", subscale),
+         wave = paste("T", wave, sep = ""),
+         subscale = gsub("(.*)(_)([0-9])", "\\1", subscale)) %>%
+  select(subscale, wave, item)
 
 ```
 
@@ -398,14 +402,16 @@ for(i in 1:length(subscale_data)){
   
 }
 
-
 alpha_drop <- map_dfr(alpha_drop, bind_rows) %>% 
             round(digits = 3) %>%
             rownames_to_column("item") %>%
   left_join(subscale_item_name, by = "item") %>%
-  select(subscale, everything())
+  select(subscale, wave, everything())
 
-flextable(alpha_drop) %>%
+alpha_drop <- as_grouped_data(alpha_drop, groups = c( "wave","subscale"))
+
+
+as_flextable(alpha_drop) %>%
   align(part = "all") %>%
   font(fontname = "Times", part = "all") %>% 
   bold(part = "header") %>%
@@ -433,7 +439,9 @@ item_stats <- map_dfr(item_stats, bind_rows) %>%
   left_join(subscale_item_name, by = "item") %>%
   select(subscale, everything())
 
-flextable(item_stats) %>%
+item_stats <- as_grouped_data(item_stats, groups = c( "wave","subscale"))
+
+as_flextable(item_stats) %>%
   align(part = "all") %>%
   font(fontname = "Times", part = "all") %>%
   bold(part = "header") %>%
@@ -455,11 +463,20 @@ for(i in 1:length(subscale_data)){
 
 total_stats <- map_dfr(total_stats, bind_rows) %>% 
             round(digits = 3) %>%
-            mutate(subscale = unique(subscale_item_name$subscale)) %>%
-  left_join(get.omega(model_lg_inv[[3]]), by = "subscale") %>% # merge in omega squared 
-  select(subscale, omega, everything())
+            mutate(subscale_wave = unique(
+              paste(subscale_item_name$subscale,
+                    gsub("^(T)([0-9])$","\\2",subscale_item_name$wave),
+                    sep = "_"))
+            ) %>%
+  left_join(get.omega(model_lg_inv[[3]]), by = "subscale_wave") %>% # merge in omega squared 
+   mutate(wave = gsub("(.*)(_)([0-9])", "\\3", subscale_wave),
+         wave = paste("T", wave, sep = ""),
+         subscale = gsub("(.*)(_)([0-9])", "\\1", subscale_wave)) %>%
+  select(subscale, wave, omega, everything(), -subscale_wave)
 
-flextable(total_stats) %>%
+total_stats <- as_grouped_data(total_stats, groups = c( "wave"))
+
+as_flextable(total_stats) %>%
   align(part = "all") %>%
   font(fontname = "Times", part = "all") %>% 
   bold(part = "header") %>%
@@ -478,7 +495,14 @@ flextable(total_stats) %>%
 
 df_inv_tx <- map_dfr(lapply(model_inv_tx, get.invariance), bind_rows)
 
-flextable(df_inv_tx) %>% 
+df_inv_tx <- df_inv_tx %>%
+  mutate(wave = gsub("^(.*)([0-9])_(.*)([0-9])_(.*)$", "\\2", Filename), .before = "Parameters") %>%
+  mutate(wave = paste("T", wave, sep = ""))
+
+df_inv_tx <- as_grouped_data(df_inv_tx, groups = c("wave"))
+
+
+as_flextable(df_inv_tx) %>% 
   compose(
     part = "header", j = "ChiSqM_Value",
     value = as_paragraph("\U03C7",as_sup("2"))
@@ -514,7 +538,13 @@ flextable(df_inv_tx) %>%
 
 df_inv_gender <- map_dfr(lapply(model_inv_gender, get.invariance), bind_rows)
 
-flextable(df_inv_gender) %>% 
+df_inv_gender <- df_inv_gender %>%
+  mutate(wave = gsub("^(.*)([0-9])_(.*)([0-9])_(.*)$", "\\2", Filename), .before = "Parameters") %>%
+  mutate(wave = paste("T", wave, sep = ""))
+
+df_inv_gender <- as_grouped_data(df_inv_gender, groups = c("wave"))
+
+as_flextable(df_inv_gender) %>% 
   compose(
     part = "header", j = "ChiSqM_Value",
     value = as_paragraph("\U03C7",as_sup("2"))
@@ -550,7 +580,13 @@ flextable(df_inv_gender) %>%
 
 df_inv_age <- map_dfr(lapply(model_inv_age, get.invariance), bind_rows)
 
-flextable(df_inv_age) %>% 
+df_inv_age <- df_inv_age %>%
+  mutate(wave = gsub("^(.*)([0-9])_(.*)([0-9])_(.*)$", "\\2", Filename), .before = "Parameters") %>%
+  mutate(wave = paste("T", wave, sep = ""))
+
+df_inv_age <- as_grouped_data(df_inv_age, groups = c("wave"))
+
+as_flextable(df_inv_age) %>% 
   compose(
     part = "header", j = "ChiSqM_Value",
     value = as_paragraph("\U03C7",as_sup("2"))

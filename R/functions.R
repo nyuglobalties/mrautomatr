@@ -175,9 +175,9 @@ get.omega <- function(model){
    output <- df %>% 
     group_by(paramHeader) %>%
     summarize(omega = calc.omega(loadings, resid)) %>%
-    mutate(subscale = gsub("^(.*)(_)([0-9])(.BY)$","\\1\\2\\3", paramHeader)
+    mutate(subscale_wave = gsub("^(.*)(_)([0-9])(.BY)$","\\1\\2\\3", paramHeader)
            ) %>%
-     select(subscale, omega)
+     select(subscale_wave, omega)
      
     
   return(output)
