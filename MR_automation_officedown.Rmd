@@ -265,30 +265,30 @@ while (chunk_num >= 1) {
 ```{r correlation_matrix, tab.cap = "Correlation matrix", tab.id = "correlation_matrix"}
 # Correlation matrix
 
-df_cor <- get.cor(model = model_lg_inv[[3]], # the third item should be the scalar model
-             string = ".WITH$")
+df_cor <- sup.cat(get.cor(model = model_lg_inv[[3]], # the third item should be the scalar model
+             string = ".WITH$"))
 
 df_cor <- df_cor %>%
             rownames_to_column("variable") %>%
             rename(" " = variable)
 
 flextable(df_cor) %>%
-  align(part = "all") %>%
-  font(fontname = "Times", part = "body") %>%
+  add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+                  colwidths =  ncol(df_cor)) %>%
+  align(part = "all") %>% 
+  font(fontname = "Times", part = "all") %>%
   bold(part = "header") %>%
   bold(j = " ", part = "body") %>%
   fontsize(size = 10, part = "all") %>% 
-   add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-                  colwidths =  ncol(df_cor)) %>% 
   italic(part = "footer") %>%
   set_table_properties(layout = "autofit")
 ```
 
 \newpage
 
-## Factor Analysis
+### Factor Analysis
 
-### EFA and CFA
+#### EFA and CFA
 ```{r EFA screeplot, fig.height = 4, fig.width = 12}
 # EFA screeplot: pending for now
 
@@ -311,7 +311,7 @@ flextable(df_cor) %>%
 
 ```{r, cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit"}
 
-df_cfa <- map_dfr(lapply(model_cfa, get.fit), bind_rows)
+df_cfa <- sup.cat(map_dfr(lapply(model_cfa, get.fit),bind_rows))
 
 flextable(df_cfa) %>%
     compose(
@@ -330,10 +330,10 @@ flextable(df_cfa) %>%
 \newpage
 ```{r, cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300}
 
-plot_label <- map_dfc(lapply(model_cfa, get.est), bind_cols) %>%
+plot_label <- sup.cat(map_dfc(lapply(model_cfa, get.est), bind_cols)) %>%
   unite("label", everything(), sep = "")
 
-model_cfa_str <- readModels(file.path(model_file_path, model_cfa[[1]]))
+model_cfa_str <- sup.cat(readModels(file.path(model_file_path, model_cfa[[1]])))
 
 par(mfrow = c(1,1))
 semPaths(model_cfa_str, style="lisrel", layout = "tree",
@@ -345,8 +345,8 @@ semPaths(model_cfa_str, style="lisrel", layout = "tree",
 \newpage
 
 ```{r CFA_model_parameters, tab.cap = "CFA model parameters at all waves", tab.id = "CFA_model_parameters"}
-df_cfa_modparam <- lapply(model_cfa, get.modparam) %>% 
-  reduce(left_join, by = c("paramHeader", "param"))
+df_cfa_modparam <- sup.cat(lapply(model_cfa, get.modparam) %>% 
+  reduce(left_join, by = c("paramHeader", "param")))
 
 flextable(df_cfa_modparam) %>%
   align(part = "all") %>%
@@ -360,7 +360,7 @@ flextable(df_cfa_modparam) %>%
 
 ```{r cfa_r2, tab.cap = "CFA model R-squared at all waves", tab.id = "CFA_r2"}
 
-df_cfa_r2 <- lapply(model_cfa, get.R2) %>% 
+df_cfa_r2 <- sup.cat(lapply(model_cfa, get.R2)) %>% 
   reduce(left_join, by = c("param"))
 
 flextable(df_cfa_r2) %>%
@@ -374,7 +374,7 @@ flextable(df_cfa_r2) %>%
 
 \newpage
 
-### Internal Reliability and Correlations
+#### Internal Reliability and Correlations
 
 
 ```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability"}
@@ -468,7 +468,7 @@ total_stats <- map_dfr(total_stats, bind_rows) %>%
                     gsub("^(T)([0-9])$","\\2",subscale_item_name$wave),
                     sep = "_"))
             ) %>%
-  left_join(get.omega(model_lg_inv[[3]]), by = "subscale_wave") %>% # merge in omega squared 
+  left_join(sup.cat(get.omega(model_lg_inv[[3]])), by = "subscale_wave") %>% # merge in omega squared 
    mutate(wave = gsub("(.*)(_)([0-9])", "\\3", subscale_wave),
          wave = paste("T", wave, sep = ""),
          subscale = gsub("(.*)(_)([0-9])", "\\1", subscale_wave)) %>%
@@ -489,11 +489,11 @@ as_flextable(total_stats) %>%
 \newpage
 
 
-### Measurement Invariance
+#### Measurement Invariance
 
 ```{r inv_tx, tab.cap = "Treatment group invariance model fit", tab.id = "inv_tx"}
 
-df_inv_tx <- map_dfr(lapply(model_inv_tx, get.invariance), bind_rows)
+df_inv_tx <- sup.cat(map_dfr(lapply(model_inv_tx, get.invariance), bind_rows))
 
 df_inv_tx <- df_inv_tx %>%
   mutate(wave = gsub("^(.*)([0-9])_(.*)([0-9])_(.*)$", "\\2", Filename), .before = "Parameters") %>%
@@ -536,7 +536,7 @@ as_flextable(df_inv_tx) %>%
 \newpage
 ```{r inv_gender, tab.cap = "Gender invariance model fit", tab.id = "inv_gender"}
 
-df_inv_gender <- map_dfr(lapply(model_inv_gender, get.invariance), bind_rows)
+df_inv_gender <- sup.cat(map_dfr(lapply(model_inv_gender, get.invariance), bind_rows))
 
 df_inv_gender <- df_inv_gender %>%
   mutate(wave = gsub("^(.*)([0-9])_(.*)([0-9])_(.*)$", "\\2", Filename), .before = "Parameters") %>%
@@ -578,7 +578,7 @@ as_flextable(df_inv_gender) %>%
 \newpage
 ```{r inv_age, tab.cap = "Age invariance model fit", tab.id = "inv_age"}
 
-df_inv_age <- map_dfr(lapply(model_inv_age, get.invariance), bind_rows)
+df_inv_age <- sup.cat(map_dfr(lapply(model_inv_age, get.invariance), bind_rows))
 
 df_inv_age <- df_inv_age %>%
   mutate(wave = gsub("^(.*)([0-9])_(.*)([0-9])_(.*)$", "\\2", Filename), .before = "Parameters") %>%
@@ -620,7 +620,7 @@ as_flextable(df_inv_age) %>%
 \newpage
 ```{r inv_lg, tab.cap = "Longitudinal invariance model fit", tab.id = "inv_lg"}
 
-df_inv_lg <- get.invariance(model_lg_inv)
+df_inv_lg <- sup.cat(get.invariance(model_lg_inv))
 
 flextable(df_inv_lg) %>% 
   compose(

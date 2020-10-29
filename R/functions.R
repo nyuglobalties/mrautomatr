@@ -1,10 +1,9 @@
 # suppress cat messages from MplusAutomation
-sup.cat <- function(myfunction){
+sup.cat <- function(code){
   
-  log <- capture.output({
-    res <- myfunction}
-    )
-  print(res)
+  withr::with_output_sink(nullfile(), 
+                          {code}
+                          )
 }
 
 # get correlation matrix
