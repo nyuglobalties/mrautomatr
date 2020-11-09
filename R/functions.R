@@ -1,3 +1,15 @@
+# split list into even chunks
+
+split.list <- function(model, k){
+  
+  n = length(model)
+  
+  split(model, 
+        rep(1:ceiling(n/k), 
+            each=k)[1:n])
+}
+
+
 # suppress cat messages from MplusAutomation
 sup.cat <- function(code){
   
