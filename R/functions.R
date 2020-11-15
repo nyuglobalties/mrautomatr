@@ -81,7 +81,7 @@ get.est <- function(model){
   output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
   
   wave <- paste("T",
-                gsub("^(.*)([0-9])_(.*)$", "\\2", model),
+                gsub("^([a-zA-Z]+)([0-9])(.*)$", "\\2", model),
                 ": ",
                 sep = "")
 
@@ -101,7 +101,7 @@ get.modparam <- function(model){
   
   wave <- paste("_",
                 "T",
-                gsub("^(.*)([0-9])_(.*)$", "\\2", model),
+                gsub("^([a-zA-Z]+)([0-9])(.*)$", "\\2", model),
                 sep = "")
   
   output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
@@ -116,7 +116,7 @@ get.R2 <- function(model){
   
   wave <- paste("_",
                 "T",
-                gsub("^(.*)([0-9])_(.*)$", "\\2", model),
+                gsub("^([a-zA-Z]+)([0-9])(.*)$", "\\2", model),
                 sep = "")
   
   output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
@@ -179,8 +179,8 @@ get.omega <- function(model){
   df <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
   
   df <- df %>% 
-    mutate(type = gsub("(.*)(_)(.*)(\\.)(.*)", "\\5", paramHeader)) %>%
-    filter(type %in% c("BY", "Residual.Variances")) %>% 
+    filter(str_detect(paramHeader, "(.*)(.)(BY)$|Residual.Variances")) %>%
+    mutate(type = gsub("^([^.]+)(.)([a-zA-Z]+)$", "\\3", paramHeader)) %>% 
     group_by(type) %>%
     group_split()
   
@@ -198,7 +198,7 @@ get.omega <- function(model){
    output <- df %>% 
     group_by(paramHeader) %>%
     summarize(omega = calc.omega(loadings, resid)) %>%
-    mutate(subscale_wave = gsub("^(.*)(_)([0-9])(.BY)$","\\1\\2\\3", paramHeader)
+    mutate(subscale_wave = gsub("^([^.]+)(.)(BY)$","\\1", paramHeader)
            ) %>%
      select(subscale_wave, omega)
      
