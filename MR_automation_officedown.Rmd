@@ -229,9 +229,9 @@ dat_s <- as.data.frame(select(dat, all_of(subset_data)))
 # subscale and its corresponding item names
 subscale_item_name <- as.data.frame(subscale_data) %>%
   gather(key = "subscale", value = "item") %>%
-  mutate(wave = gsub("(.*)(_)([0-9])", "\\3", subscale),
+  mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale),
          wave = paste("T", wave, sep = ""),
-         subscale = gsub("(.*)(_)([0-9])", "\\1", subscale)) %>%
+         subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale)) %>%
   select(subscale, wave, item)
 
 ```
@@ -525,13 +525,13 @@ total_stats <- map_dfr(total_stats, bind_rows) %>%
             round(digits = 3) %>%
             mutate(subscale_wave = unique(
               paste(subscale_item_name$subscale,
-                    gsub("^(T)([0-9])$","\\2",subscale_item_name$wave),
+                    gsub("^(T)(\\d+)$","\\2",subscale_item_name$wave),
                     sep = "_"))
             ) %>%
   left_join(sup.cat(get.omega(model_lg_inv[[3]])), by = "subscale_wave") %>% # merge in omega squared 
-   mutate(wave = gsub("(.*)(_)([0-9])", "\\3", subscale_wave),
+   mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale_wave),
          wave = paste("T", wave, sep = ""),
-         subscale = gsub("(.*)(_)([0-9])", "\\1", subscale_wave)) %>%
+         subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale_wave)) %>%
   select(subscale, wave, omega, everything(), -subscale_wave)
 
 total_stats <- as_grouped_data(total_stats, groups = c( "wave"))

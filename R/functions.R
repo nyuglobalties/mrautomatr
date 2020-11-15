@@ -20,8 +20,17 @@ sup.cat <- function(code){
 
 # get correlation matrix
 get.cor <- function(model, string){
-  data <- readModels(target = file.path(model_file_path,model))
-  x <- data$parameters$stdyx.standardized
+  
+  output <- readModels(target = file.path(model_file_path,model))$parameters
+  
+  if(is.null(output$stdyx.standardized) == T){
+    x <- output$stdy.standardized
+    warning("stdyx.standardized was not calculated in the Mplus model, please check the .out file.",
+            call. = F)
+  } else{
+    x <- output$stdyx.standardized
+  }
+  
   x <- x[grepl(string,x$paramHeader),]
   x$paramHeader <- substr(x$paramHeader, 1, nchar(x$paramHeader)-5)
   
@@ -51,7 +60,7 @@ get.cor <- function(model, string){
 }
 
 # check if mplus is in version 8
-check.mplus.version.fit<- function(model){
+check.mplus.version.fit <- function(model){
   
   if(as.numeric(model$Mplus.version) >= 8){ # (Column `SRMR` doesn't exist. because the models output from Mplus 7 don't have SRMR)
     model.s <- select(model, Parameters, ChiSqM_Value, ChiSqM_DF, ChiSqM_PValue, CFI, TLI, RMSEA_Estimate, SRMR, Filename)
@@ -67,8 +76,11 @@ check.mplus.version.fit<- function(model){
 # get CFA model fit
 get.fit <- function(model){
   
-  output <- as_tibble(readModels(target = file.path(model_file_path,model))$summaries)
+  output <- readModels(target = file.path(model_file_path,model))$summaries
   
+  if(is.null(output) == T){stop("Model fits were not calculated in the Mplus model, please check the .out file.",call. = F)}
+  
+  output <- as_tibble(output)
   
   output <- check.mplus.version.fit(output)
   
@@ -78,10 +90,20 @@ get.fit <- function(model){
 # get CFA model estimate (for plotting)
 get.est <- function(model){
   
-  output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
+  output <- readModels(target = file.path(model_file_path,model))$parameters
+  
+  if(is.null(output$stdyx.standardized) == T){
+    output <- output$stdy.standardized
+    warning("stdyx.standardized was not calculated in the Mplus model, please check the .out file.",
+            call. = F)
+  } else{
+    output <- output$stdyx.standardized
+  }
+  
+  output <- as_tibble(output)
   
   wave <- paste("T",
-                gsub("^([a-zA-Z]+)([0-9])(.*)$", "\\2", model),
+                gsub("^([a-zA-Z]+)(\\d+)(.*)$", "\\2", model),
                 ": ",
                 sep = "")
 
@@ -97,11 +119,21 @@ get.est <- function(model){
 # get CFA model parameters
 get.modparam <- function(model){
   
-  output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
+  output <- readModels(target = file.path(model_file_path,model))$parameters
+  
+  if(is.null(output$stdyx.standardized) == T){
+    output <- output$stdy.standardized
+    warning("stdyx.standardized was not calculated in the Mplus model, please check the .out file.",
+            call. = F)
+  } else{
+    output <- output$stdyx.standardized
+  }
+  
+  output <- as_tibble(output)
   
   wave <- paste("_",
                 "T",
-                gsub("^([a-zA-Z]+)([0-9])(.*)$", "\\2", model),
+                gsub("^([a-zA-Z]+)(\\d+)(.*)$", "\\2", model),
                 sep = "")
   
   output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
@@ -112,11 +144,15 @@ get.modparam <- function(model){
 # get CFA R-squared
 get.R2 <- function(model){
   
-  output <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$r2)
+  output <- readModels(target = file.path(model_file_path,model))$parameters$r2
+  
+  if(is.null(output) == T){stop("R2 was not calculated in the Mplus model, please check the .out file.",call. = F)}
+  
+  output <- as_tibble(output)
   
   wave <- paste("_",
                 "T",
-                gsub("^([a-zA-Z]+)([0-9])(.*)$", "\\2", model),
+                gsub("^([a-zA-Z]+)(\\d+)(.*)$", "\\2", model),
                 sep = "")
   
   output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
@@ -144,12 +180,28 @@ check.mplus.version.invariance <- function(model){
 get.invariance <- function(inv_models){
   
   config = inv_models[1]
-  metric = inv_models[2]
-  scalar = inv_models[3]
+  if(is.na(config) == T){stop("Configural invariance model was not available, please add to the source folder.",call. = T)}
   
-  output_config <-as_tibble(readModels(target = file.path(model_file_path,config))$summaries)
-  output_metric <-as_tibble(readModels(target = file.path(model_file_path,metric))$summaries)
-  output_scalar <-as_tibble(readModels(target = file.path(model_file_path,scalar))$summaries)
+  metric = inv_models[2]
+  if(is.na(metric) == T){stop("Metric invariance model was not available, please add to the source folder.",call. = T)}
+  
+  scalar = inv_models[3]
+  if(is.na(scalar) == T){stop("Scalar invariance model was not available, please add to the source folder.",call. = T)}
+  
+  
+  x1 <- readModels(target = file.path(model_file_path,config))$summaries
+  if(is.null(x1) == T){stop("Model fits were not calculated in the configural invariance model, please check the .out file.",call. = F)}
+  
+  x2 <- readModels(target = file.path(model_file_path,metric))$summaries
+  if(is.null(x2) == T){stop("Model fits were not calculated in the metric invariance model, please check the .out file.",call. = F)}
+  
+  x3 <- readModels(target = file.path(model_file_path,scalar))$summaries
+  if(is.null(x2) == T){stop("Model fits were not calculated in the scalar invariance model, please check the .out file.",call. = F)}
+  
+    
+  output_config <- as_tibble(x1)
+  output_metric <- as_tibble(x2)
+  output_scalar <- as_tibble(x3)
   
   output_config <- check.mplus.version.invariance(output_config)
   output_metric <- check.mplus.version.invariance(output_metric)
@@ -175,8 +227,17 @@ calc.omega <- function(loadings, resid){
 # get omega squared from longitudinal invariance model
 get.omega <- function(model){
   
-
-  df <- as_tibble(readModels(target = file.path(model_file_path,model))$parameters$stdyx.standardized)
+  df <- readModels(target = file.path(model_file_path,model))$parameters
+  
+  if(is.null(df$stdyx.standardized) == T){
+    df <- df$stdy.standardized
+    warning("stdyx.standardized was not calculated in the scalar invariance Mplus model, please check the .out file.",
+            call. = F)
+  } else{
+    df <- df$stdyx.standardized
+  }
+  
+  df <- as_tibble(df)
   
   df <- df %>% 
     filter(str_detect(paramHeader, "(.*)(.)(BY)$|Residual.Variances")) %>%
