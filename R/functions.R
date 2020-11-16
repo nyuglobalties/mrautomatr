@@ -131,6 +131,11 @@ get.modparam <- function(model){
   
   output <- as_tibble(output)
   
+  # accepts item names and threshold names with or without wave tags
+  output <- output %>% mutate(
+    param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param)
+  )
+  
   wave <- paste("_",
                 "T",
                 gsub("^([a-zA-Z]+)(\\d+)(.*)$", "\\2", model),
@@ -149,6 +154,11 @@ get.R2 <- function(model){
   if(is.null(output) == T){stop("R2 was not calculated in the Mplus model, please check the .out file.",call. = F)}
   
   output <- as_tibble(output)
+  
+  # accepts item names and threshold names with or without wave tags
+  output <- output %>% mutate(
+    param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param)
+  )
   
   wave <- paste("_",
                 "T",

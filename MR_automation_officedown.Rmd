@@ -390,6 +390,10 @@ flextable(df_cfa) %>%
 \newpage
 ```{r, cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300}
 
+if(length(unique(sapply(sup.cat(lapply(model_cfa, get.est)), nrow))) > 1){
+  stop("The factor structure has to be the same across waves in order to draw the graph. Please check all CFA models.", call. = F)
+}
+
 plot_label <- sup.cat(map_dfc(lapply(model_cfa, get.est), bind_cols)) %>%
   unite("label", everything(), sep = "")
 
