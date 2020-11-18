@@ -40,7 +40,6 @@ library(officer)
 library(tidyverse)
 library(psych)
 library(MplusAutomation)
-library(gridExtra)
 library(semPlot)
 library(flextable)
 
@@ -98,6 +97,9 @@ subscale_data <- BBmisc::convertColsToList(user_subscale)
 # a list of all items for the current construct 
 subset_data <- as.character(unlist(lapply(subscale_data, function(x) x[!is.na(x)])
 ))
+
+# a list of EFA models (ordered by wave)
+model_efa <- split.list(model_efa, 1)
 
 # a list of CFA models (ordered by wave)
 model_cfa <- split.list(model_cfa, 1)
@@ -349,25 +351,18 @@ flextable(df_cor) %>%
 ### Factor Analysis
 
 #### EFA and CFA
-```{r EFA screeplot, fig.height = 4, fig.width = 12}
-# EFA screeplot: pending for now
+```{r efa_screeplot, fig.cap = "EFA model screeplots at all waves", fig.id = "efa_screeplot", fig.height = 4, fig.width = 9, dpi = 300}
 
-# EFA <- readModels(file.path(model_file_path,"CS1_EFA.out"))
-# 
-# # For now, you can manually set up a spreadsheet and we can work from that spreadsheet in r
-# efa <- read.csv("Eigenvector check.csv", as.is  = T)
-# 
-# efa$wave <- as.factor(efa$wave)
-# efa$wave <- factor(efa$wave,levels(efa$wave)[c(1,3,2)])
-# 
-# efa.s <- filter(efa, measure == "CS")
-# p <- ggplot(efa.s, aes(x = factor, y = eigenvalue)) +
-#   geom_point() +
-#   geom_line() +
-#   scale_x_continuous(breaks = seq(0, max(efa.s$factor), by = 2)) +
-#   facet_wrap(~ wave) +
-#   labs(x = "\nComponent Number", y = "Eigenvalue\n", title = "Figure X. Scree plots") + theme_classic();p
+df_efa <- sup.cat(map_dfr(lapply(model_efa, get.eigenvalue),bind_rows))
+
+ggplot(df_efa, aes(x = nfactor, y = ev)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = seq(0, max(df_efa$nfactor), by = 2)) +
+  facet_wrap(~ wave) +
+  labs(x = "\nComponent Number", y = "Eigenvalue\n") + theme_classic()
 ```
+\newpage
 
 ```{r, cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit"}
 
