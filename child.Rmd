@@ -5,9 +5,10 @@ date: "`r Sys.Date()`"
 params:
   printcode: no
   printwarning: no
-  storecache: yes
-  set_title: "Lebanon Year 1 (2016-2017) Measurement Report"
+  storecache: no
+  set_title: "Measurement Report"
   set_author: "Michael Wu"
+  template: "Template/input_template.xlsx"
 output: 
   officedown::rdocx_document:
     mapstyles:
@@ -56,9 +57,9 @@ source("R/functions.R")
 ```
 
 ```{r user input, include = F}
-user_text <- openxlsx::read.xlsx("Template/input_template.xlsx", sheet = 1)
-user_subscale <- openxlsx::read.xlsx("Template/input_template.xlsx", sheet = 2)
-user_model <- openxlsx::read.xlsx("Template/input_template.xlsx", sheet = 3)
+user_text <- openxlsx::read.xlsx(params$template, sheet = 1)
+user_subscale <- openxlsx::read.xlsx(params$template, sheet = 2)
+user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
 
 # create R objects for each variable listed in the excel sheets
 for (i in 1:length(user_text)) {
@@ -115,104 +116,6 @@ model_inv_age <- split.list(model_inv_age, 3)
 
 # the longitudinal invariance model
 model_lg_inv <- split.list(model_lg_inv, 1)
-```
-
-
-```{r user input text, include = F}
-# year <- "Lebanon Year 1 (2016-2017)"
-
-```
-
-```{r user input data, include = F}
-# # file path to the master dataset
-# data_file_path <- "~/Box/3EA Analysis/3EA Lebanon_Analysis/Lebanon_Y1_FA/LBY1_PREIMPUTED_FULL_SPREAD_10-31-2019_mplus.dta"
-# 
-# # specify items for each subscale, without wave subscript (ordered by wave)
-# # Hmisc has conflict with psych
-# subscale_data <- 
-#   list(
-#   HAB_1 = Hmisc::Cs(HB1_AB_1, HB2_AB_1, HB3_AB_1, HB4_AB_1, HB5_AB_1, HB6_AB_1),
-#   AD_1 = Hmisc::Cs(HB1_AD_1, HB2_AD_1, HB3_AD_1, HB4_AD_1, HB5_AD_1, HB6_AD_1),
-#   SD_1 = Hmisc::Cs(HB1_SD_1, HB2_SD_1, HB3_SD_1, HB4_SD_1, HB5_SD_1, HB6_SD_1),
-#   AR_1 = Hmisc::Cs(HB1_AR_1, HB2_AR_1, HB3_AR_1, HB4_AR_1, HB5_AR_1, HB6_AR_1),
-#   
-#   HAB_2 = Hmisc::Cs(HB1_AB_2, HB2_AB_2, HB3_AB_2, HB4_AB_2, HB5_AB_2, HB6_AB_2),
-#   AD_2 = Hmisc::Cs(HB1_AD_2, HB2_AD_2, HB3_AD_2, HB4_AD_2, HB5_AD_2, HB6_AD_2),
-#   SD_2 = Hmisc::Cs(HB1_SD_2, HB2_SD_2, HB3_SD_2, HB4_SD_2, HB5_SD_2, HB6_SD_2),
-#   AR_2 = Hmisc::Cs(HB1_AR_2, HB2_AR_2, HB3_AR_2, HB4_AR_2, HB5_AR_2, HB6_AR_2),
-#   
-#   HAB_3 = Hmisc::Cs(HB1_AB_3, HB2_AB_3, HB3_AB_3, HB4_AB_3, HB5_AB_3, HB6_AB_3),
-#   AD_3 = Hmisc::Cs(HB1_AD_3, HB2_AD_3, HB3_AD_3, HB4_AD_3, HB5_AD_3, HB6_AD_3),
-#   SD_3 = Hmisc::Cs(HB1_SD_3, HB2_SD_3, HB3_SD_3, HB4_SD_3, HB5_SD_3, HB6_SD_3),
-#   AR_3 = Hmisc::Cs(HB1_AR_3, HB2_AR_3, HB3_AR_3, HB4_AR_3, HB5_AR_3, HB6_AR_3)
-#   )
-# 
-# # a list of all items for the current construct 
-# subset_data <- as.character(unlist(subscale_data))
-# 
-# 
-# # file path to all Mplus model outputs
-# model_file_path <- "~/Box/For Zezhen/MR automation/Test Data"
-# 
-# # a list of CFA models (ordered by wave)
-# model_cfa <- list("CS1_CFA4.out",
-#                "CS2_CFA4.out",
-#                "CS3_CFA4.out")
-# 
-# 
-# # a list of treatment invariance models (config, metric and scalar; ordered by wave)
-# model_inv_tx <- list(
-#   c("CS1_CFA4_tx_inv_config.out",
-#     "CS1_CFA4_tx_inv_metric.out",
-#     "CS1_CFA4_tx_inv_scalar.out"),
-# 
-#   c("CS2_CFA4_tx_inv_config.out",
-#     "CS2_CFA4_tx_inv_metric.out",
-#     "CS2_CFA4_tx_inv_scalar.out"),
-# 
-#   c("CS3_CFA4_tx_inv_config.out",
-#     "CS3_CFA4_tx_inv_metric.out",
-#     "CS3_CFA4_tx_inv_scalar.out")
-#   )
-# 
-# # a list of gender invariance models (config, metric and scalar; ordered by wave)
-# model_inv_gender <- list(
-#   c("CS1_CFA4_Gender_inv_config.out",
-#   "CS1_CFA4_Gender_inv_metric.out",
-#   "CS1_CFA4_Gender_inv_scalar.out"),
-# 
-#   c("CS2_CFA4_Gender_inv_config.out",
-#   "CS2_CFA4_Gender_inv_metric.out",
-#   "CS2_CFA4_Gender_inv_scalar.out"),
-# 
-#   c("CS3_CFA4_Gender_inv_config.out",
-#   "CS3_CFA4_Gender_inv_metric.out",
-#   "CS3_CFA4_Gender_inv_scalar.out")
-#   )
-# 
-# # a list of age invariance models (config, metric and scalar; ordered by wave)
-# model_inv_age <- list(
-#   c("CS1_CFA4_Age_inv_config.out",
-#   "CS1_CFA4_Age_inv_metric.out",
-#   "CS1_CFA4_Age_inv_scalar.out"),
-# 
-#   c("CS2_CFA4_Age_inv_config.out",
-#   "CS2_CFA4_Age_inv_metric.out",
-#   "CS2_CFA4_Age_inv_scalar.out"),
-# 
-#   c("CS3_CFA4_Age_inv_config.out",
-#   "CS3_CFA4_Age_inv_metric.out",
-#   "CS3_CFA4_Age_inv_scalar.out")
-#   )
-# 
-# # the longitudinal invariance model
-# model_lg_inv <- list(
-#   "CS123_CFA4_inv_config.out",
-#   "CS123_CFA4_inv_metric.out",
-#   "CS123_CFA4_inv_scalar.out"
-# )
-
-
 ```
 
 ```{r data preparation, include = F}
@@ -720,3 +623,9 @@ flextable(df_inv_lg) %>%
 
 TBD...
 
+
+
+
+```{r, include = F}
+rm(list=ls())
+```

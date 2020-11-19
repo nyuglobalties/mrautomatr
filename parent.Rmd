@@ -1,0 +1,51 @@
+---
+title: "parent"
+author: "Michael Wu"
+date: "11/18/2020"
+output: html_document
+---
+```{r function}
+
+# function to render report
+render_report = function(template, index, title) {
+  rmarkdown::render(
+    "child.Rmd", params = list(
+      template = template,
+      set_title = title
+    ),
+    output_file = paste0("Report_", index, ".docx")
+  )
+}
+
+```
+
+
+```{r knit one report}
+render_report(template = "Template/input_template_niger_psra.xlsx",
+              index = "niger_psra",
+              title = "Niger Year 1 (2016-2017)")
+```
+
+
+```{r knit multiple reports separately}
+# get input template file names
+input_templates <- paste0("Template/",list.files("Template", pattern = "\\.xlsx$"))
+
+# get measure names
+index <- gsub("(Template/input_template_)(.*)(.xlsx)$", "\\2", input_templates)
+
+# get document titles
+title <- c()
+for(i in 1:length(input_templates)){
+  title[i] <- openxlsx::read.xlsx(input_templates[i], sheet = 1)$year
+}
+
+
+# render reports
+for (i in 1:length(input_templates)) {
+  render_report(template = input_templates[i],
+                index = index[i],
+                title = title[i])
+}
+
+```
