@@ -8,7 +8,7 @@ params:
   storecache: no
   set_title: "Measurement Report"
   set_author: "Michael Wu"
-  template: "Template/input_template.xlsx"
+  template: "Template/input_template_lebanon_cs.xlsx"
 output: 
   officedown::rdocx_document:
     mapstyles:
@@ -61,71 +61,45 @@ user_text <- openxlsx::read.xlsx(params$template, sheet = 1)
 user_subscale <- openxlsx::read.xlsx(params$template, sheet = 2)
 user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
 
-# create R objects for each variable listed in the excel sheets
-for (i in 1:length(user_text)) {
-  
-  assign(names(user_text)[i], user_text[,i])
-  
-}
-
-for (i in 1:length(user_subscale)) {
-  
-  assign(names(user_subscale)[i], user_subscale[,i])
-  
-}
-
-
-for (i in 1:length(user_model)) {
-  
-  assign(names(user_model)[i], user_model[,i])
-  
-}
-
-# get all the user input vectors
-analysis_object <- ls()[sapply(ls(), function(x) class(get(x))) == 'character']
-
-# remove the NAs created by the excel sheets with unequal number of rows for each variable
-for (i in 1:length(analysis_object)) {
-  assign(
-  analysis_object[i], 
-  na.omit(eval(as.name(analysis_object[i])))
-  )
-}
+# using assign() causes problems in knitting two documents at the same time, therefore I am manually assigning variable names here
+year <- user_text$year
+data_file_path <- user_text$data_file_path
+model_file_path <- user_text$model_file_path
 
 # specify items for each subscale, without wave subscript (ordered by wave)
 subscale_data <- BBmisc::convertColsToList(user_subscale)
 
-# a list of all items for the current construct 
+  # a vector of all items for the current construct 
 subset_data <- as.character(unlist(lapply(subscale_data, function(x) x[!is.na(x)])
 ))
 
-# a list of EFA models (ordered by wave)
-model_efa <- split.list(model_efa, 1)
+# a vector of EFA models (ordered by wave)
+model_efa <- na.omit(user_model$model_efa)
 
-# a list of CFA models (ordered by wave)
-model_cfa <- split.list(model_cfa, 1)
+# a vector of CFA models (ordered by wave)
+model_cfa <- na.omit(user_model$model_cfa)
 
 # a list of treatment invariance models (config, metric and scalar; ordered by wave)
-model_inv_tx <- split.list(model_inv_tx, 3)
+model_inv_tx <- split.list(na.omit(user_model$model_inv_tx), 3)
   
 # a list of gender invariance models (config, metric and scalar; ordered by wave)
-model_inv_gender <- split.list(model_inv_gender, 3)
+model_inv_gender <- split.list(na.omit(user_model$model_inv_gender),3)
 
 # a list of age invariance models (config, metric and scalar; ordered by wave)
-model_inv_age <- split.list(model_inv_age, 3)
+model_inv_age <- split.list(na.omit(user_model$model_inv_age),3)
 
 # the longitudinal invariance model
-model_lg_inv <- split.list(model_lg_inv, 1)
+model_inv_lg <- split.list(na.omit(user_model$model_inv_lg),1)
 ```
 
 ```{r data preparation, include = F}
 # read in data (currently accepting dta, xlsx and csv)
-dat <- if(grepl(".dta$", data_file_path)){
+dat <- if(grepl(".dta$", user_text$data_file_path)){
     haven::read_dta(data_file_path)
-} else if(grepl(".xlsx$", data_file_path)){
+} else if(grepl(".xlsx$", user_text$data_file_path)){
   openxlsx::read.xlsx(data_file_path)
-} else if(grepl(".csv$", data_file_path)){
-  read_csv(data_file_path)
+} else if(grepl(".csv$", duser_text$data_file_path)){
+  read_csv(user_text$data_file_path)
 }
 
 # subset of only items for the current construct
@@ -137,7 +111,8 @@ subscale_item_name <- as.data.frame(subscale_data) %>%
   mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale),
          wave = paste("T", wave, sep = ""),
          subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale)) %>%
-  select(subscale, wave, item)
+  select(subscale, wave, item) %>% 
+  drop_na()
 
 ```
 
@@ -230,8 +205,9 @@ while (chunk_num >= 1) {
 ```{r correlation_matrix, tab.cap = "Correlation matrix", tab.id = "correlation_matrix"}
 # Correlation matrix
 
-df_cor <- sup.cat(get.cor(model = model_lg_inv[[3]], # the third item should be the scalar model
-             string = ".WITH$"))
+df_cor <- sup.cat(get.cor(model = model_inv_lg[3], # the third one is always the scalar model
+                          path = model_file_path,
+                          string = ".WITH$"))
 
 df_cor <- df_cor %>%
             rownames_to_column("variable") %>%
@@ -256,7 +232,7 @@ flextable(df_cor) %>%
 #### EFA and CFA
 ```{r efa_screeplot, fig.cap = "EFA model screeplots at all waves", fig.id = "efa_screeplot", fig.height = 4, fig.width = 9, dpi = 300}
 
-df_efa <- sup.cat(map_dfr(lapply(model_efa, get.eigenvalue),bind_rows))
+df_efa <- sup.cat(map_dfr(lapply(model_efa, get.eigenvalue, path = model_file_path),bind_rows))
 
 ggplot(df_efa, aes(x = nfactor, y = ev)) +
   geom_point() +
@@ -269,7 +245,7 @@ ggplot(df_efa, aes(x = nfactor, y = ev)) +
 
 ```{r, cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit"}
 
-df_cfa <- sup.cat(map_dfr(lapply(model_cfa, get.fit),bind_rows))
+df_cfa <- sup.cat(map_dfr(lapply(model_cfa, get.fit, path = model_file_path),bind_rows))
 
 flextable(df_cfa) %>%
     compose(
@@ -288,11 +264,11 @@ flextable(df_cfa) %>%
 \newpage
 ```{r, cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300}
 
-if(length(unique(sapply(sup.cat(lapply(model_cfa, get.est)), nrow))) > 1){
+if(length(unique(sapply(sup.cat(lapply(model_cfa, get.est, path = model_file_path)), nrow))) > 1){
   stop("The factor structure has to be the same across waves in order to draw the graph. Please check all CFA models.", call. = F)
 }
 
-plot_label <- sup.cat(map_dfc(lapply(model_cfa, get.est), bind_cols)) %>%
+plot_label <- sup.cat(map_dfc(lapply(model_cfa, get.est, path = model_file_path), bind_cols)) %>%
   unite("label", everything(), sep = "")
 
 model_cfa_str <- sup.cat(readModels(file.path(model_file_path, model_cfa[[1]])))
@@ -307,7 +283,7 @@ semPaths(model_cfa_str, style="lisrel", layout = "tree",
 \newpage
 
 ```{r CFA_model_parameters, tab.cap = "CFA model parameters at all waves", tab.id = "CFA_model_parameters"}
-df_cfa_modparam <- sup.cat(lapply(model_cfa, get.modparam) %>% 
+df_cfa_modparam <- sup.cat(lapply(model_cfa, get.modparam, path = model_file_path) %>% 
   reduce(left_join, by = c("paramHeader", "param")))
 
 flextable(df_cfa_modparam) %>%
@@ -322,7 +298,7 @@ flextable(df_cfa_modparam) %>%
 
 ```{r cfa_r2, tab.cap = "CFA model R-squared at all waves", tab.id = "CFA_r2"}
 
-df_cfa_r2 <- sup.cat(lapply(model_cfa, get.R2)) %>% 
+df_cfa_r2 <- sup.cat(lapply(model_cfa, get.R2, path = model_file_path)) %>% 
   reduce(left_join, by = c("param"))
 
 flextable(df_cfa_r2) %>%
@@ -430,7 +406,7 @@ total_stats <- map_dfr(total_stats, bind_rows) %>%
                     gsub("^(T)(\\d+)$","\\2",subscale_item_name$wave),
                     sep = "_"))
             ) %>%
-  left_join(sup.cat(get.omega(model_lg_inv[[3]])), by = "subscale_wave") %>% # merge in omega squared 
+  left_join(sup.cat(get.omega(model_inv_lg[3],path = model_file_path)), by = "subscale_wave") %>% # merge in omega squared 
    mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale_wave),
          wave = paste("T", wave, sep = ""),
          subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale_wave)) %>%
@@ -455,7 +431,7 @@ as_flextable(total_stats) %>%
 
 ```{r inv_tx, tab.cap = "Treatment group invariance model fit", tab.id = "inv_tx"}
 
-df_inv_tx <- sup.cat(map_dfr(lapply(model_inv_tx, get.invariance), bind_rows))
+df_inv_tx <- sup.cat(map_dfr(lapply(model_inv_tx, get.invariance, path = model_file_path), bind_rows))
 
 df_inv_tx <- df_inv_tx %>%
   mutate(wave = gsub("^([a-zA-Z]+)(\\d+)(.*)", "\\2", Filename), .before = "Parameters") %>%
@@ -498,7 +474,7 @@ as_flextable(df_inv_tx) %>%
 \newpage
 ```{r inv_gender, tab.cap = "Gender invariance model fit", tab.id = "inv_gender"}
 
-df_inv_gender <- sup.cat(map_dfr(lapply(model_inv_gender, get.invariance), bind_rows))
+df_inv_gender <- sup.cat(map_dfr(lapply(model_inv_gender, get.invariance, path = model_file_path), bind_rows))
 
 df_inv_gender <- df_inv_gender %>%
   mutate(wave = gsub("^([a-zA-Z]+)(\\d+)(.*)", "\\2", Filename), .before = "Parameters") %>%
@@ -540,7 +516,7 @@ as_flextable(df_inv_gender) %>%
 \newpage
 ```{r inv_age, tab.cap = "Age invariance model fit", tab.id = "inv_age"}
 
-df_inv_age <- sup.cat(map_dfr(lapply(model_inv_age, get.invariance), bind_rows))
+df_inv_age <- sup.cat(map_dfr(lapply(model_inv_age, get.invariance, path = model_file_path), bind_rows))
 
 df_inv_age <- df_inv_age %>%
   mutate(wave = gsub("^([a-zA-Z]+)(\\d+)(.*)", "\\2", Filename), .before = "Parameters") %>%
@@ -582,7 +558,7 @@ as_flextable(df_inv_age) %>%
 \newpage
 ```{r inv_lg, tab.cap = "Longitudinal invariance model fit", tab.id = "inv_lg"}
 
-df_inv_lg <- sup.cat(get.invariance(model_lg_inv))
+df_inv_lg <- sup.cat(get.invariance(model_inv_lg, path = model_file_path))
 
 flextable(df_inv_lg) %>% 
   compose(
@@ -623,9 +599,7 @@ flextable(df_inv_lg) %>%
 
 TBD...
 
-
-
-
-```{r, include = F}
-rm(list=ls())
+```{r}
+rm(list = ls())
 ```
+

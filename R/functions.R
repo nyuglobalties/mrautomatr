@@ -19,9 +19,9 @@ sup.cat <- function(code){
 }
 
 # get correlation matrix
-get.cor <- function(model, string){
-  
-  output <- readModels(target = file.path(model_file_path,model))$parameters
+get.cor <- function(model, path, string){
+
+  output <- readModels(target = file.path(path, model))$parameters
   
   if(is.null(output$stdyx.standardized) == T){
     x <- output$stdy.standardized
@@ -74,9 +74,9 @@ check.mplus.version.fit <- function(model){
 }
 
 # get CFA model fit
-get.fit <- function(model){
+get.fit <- function(model, path){
   
-  output <- readModels(target = file.path(model_file_path,model))$summaries
+  output <- readModels(target = file.path(path,model))$summaries
   
   if(is.null(output) == T){stop("Model fits were not calculated in the Mplus model, please check the .out file.",call. = F)}
   
@@ -87,10 +87,11 @@ get.fit <- function(model){
   return(output)
 }
 
+
 # get CFA model estimate (for plotting)
-get.est <- function(model){
+get.est <- function(model, path){
   
-  output <- readModels(target = file.path(model_file_path,model))$parameters
+  output <- readModels(target = file.path(path,model))$parameters
   
   if(is.null(output$stdyx.standardized) == T){
     output <- output$stdy.standardized
@@ -117,9 +118,9 @@ get.est <- function(model){
 }
 
 # get CFA model parameters
-get.modparam <- function(model){
+get.modparam <- function(model, path){
   
-  output <- readModels(target = file.path(model_file_path,model))$parameters
+  output <- readModels(target = file.path(path,model))$parameters
   
   if(is.null(output$stdyx.standardized) == T){
     output <- output$stdy.standardized
@@ -147,9 +148,9 @@ get.modparam <- function(model){
 }
 
 # get CFA R-squared
-get.R2 <- function(model){
+get.R2 <- function(model, path){
   
-  output <- readModels(target = file.path(model_file_path,model))$parameters$r2
+  output <- readModels(target = file.path(path,model))$parameters$r2
   
   if(is.null(output) == T){stop("R2 was not calculated in the Mplus model, please check the .out file.",call. = F)}
   
@@ -187,7 +188,7 @@ check.mplus.version.invariance <- function(model){
 
 # get measurement invariance model fits
 
-get.invariance <- function(inv_models){
+get.invariance <- function(inv_models, path){
   
   config = inv_models[1]
   if(is.na(config) == T){stop("Configural invariance model was not available, please add to the source folder.",call. = T)}
@@ -199,13 +200,13 @@ get.invariance <- function(inv_models){
   if(is.na(scalar) == T){stop("Scalar invariance model was not available, please add to the source folder.",call. = T)}
   
   
-  x1 <- readModels(target = file.path(model_file_path,config))$summaries
+  x1 <- readModels(target = file.path(path,config))$summaries
   if(is.null(x1) == T){stop("Model fits were not calculated in the configural invariance model, please check the .out file.",call. = F)}
   
-  x2 <- readModels(target = file.path(model_file_path,metric))$summaries
+  x2 <- readModels(target = file.path(path,metric))$summaries
   if(is.null(x2) == T){stop("Model fits were not calculated in the metric invariance model, please check the .out file.",call. = F)}
   
-  x3 <- readModels(target = file.path(model_file_path,scalar))$summaries
+  x3 <- readModels(target = file.path(path,scalar))$summaries
   if(is.null(x2) == T){stop("Model fits were not calculated in the scalar invariance model, please check the .out file.",call. = F)}
   
     
@@ -235,9 +236,9 @@ calc.omega <- function(loadings, resid){
 
 
 # get omega squared from longitudinal invariance model
-get.omega <- function(model){
+get.omega <- function(model, path){
   
-  df <- readModels(target = file.path(model_file_path,model))$parameters
+  df <- readModels(target = file.path(path,model))$parameters
   
   if(is.null(df$stdyx.standardized) == T){
     df <- df$stdy.standardized
@@ -281,10 +282,10 @@ get.omega <- function(model){
 
 # get eigenvalue
 
-get.eigenvalue <- function(model){
+get.eigenvalue <- function(model, path){
   
   # read .out as texts
-  ev <- readLines(file.path(model_file_path,model))
+  ev <- readLines(file.path(path,model))
   
   # identify the section for eigenvalues
   begin <- grep("RESULTS FOR EXPLORATORY FACTOR ANALYSIS",ev) + 1
