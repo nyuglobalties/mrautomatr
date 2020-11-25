@@ -18,4 +18,6 @@ Imports:
     withr,
     MplusAutomation,
     dplyr,
-    stringr
+    stringr,
+    glue,
+    openxlsx
