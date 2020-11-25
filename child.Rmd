@@ -53,7 +53,7 @@ ft <- fp_text(shading.color='#EFEFEF',
               bold = TRUE)
 
 # functions to generate the report
-source("R/functions.R")
+source(here::here("R/functions.R"))
 ```
 
 ```{r user input, include = F}

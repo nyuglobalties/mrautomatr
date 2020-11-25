@@ -4,3 +4,9 @@
 .Ruserdata
 .MR_automation_officedown_files
 .MR_automation_officedown_cache
+
+# macOS
+**/*.DS_Store
+
+# Excel lockfiles
+**/~$*
