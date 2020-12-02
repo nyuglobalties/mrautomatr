@@ -2,8 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-.MR_automation_officedown_files
-.MR_automation_officedown_cache
+.child_files
+.child_cache
 
 # macOS
 **/*.DS_Store
