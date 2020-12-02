@@ -95,7 +95,7 @@ model_inv_lg <- split.list(na.omit(user_model$model_inv_lg),1)
 ```{r data preparation, include = F}
 # read in data (currently accepting dta, xlsx and csv)
 dat <- if(grepl(".dta$", user_text$data_file_path)){
-    haven::read_dta(data_file_path)
+  haven::read_dta(data_file_path) %>% haven::zap_labels()
 } else if(grepl(".xlsx$", user_text$data_file_path)){
   openxlsx::read.xlsx(data_file_path)
 } else if(grepl(".csv$", duser_text$data_file_path)){
