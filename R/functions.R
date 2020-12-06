@@ -1,3 +1,18 @@
+# load multiple types of data files
+read.any <- function(path){
+  
+  data <- if(grepl(".dta$", path)){
+    haven::read_dta(path) %>% 
+      haven::zap_labels() # haven label interferes with skim
+  } else if(grepl(".xlsx$", path)){
+    openxlsx::read.xlsx(path)
+  } else if(grepl(".csv$", path)){
+    read_csv(path)
+  }
+  
+  return(data)
+}
+
 # split list into even chunks
 
 split.list <- function(model, k){
@@ -9,7 +24,6 @@ split.list <- function(model, k){
             each=k)[1:n])
 }
 
-
 # suppress cat messages from MplusAutomation
 sup.cat <- function(code){
   
@@ -18,8 +32,8 @@ sup.cat <- function(code){
                           )
 }
 
-# get correlation matrix
-get.cor <- function(model, path, string){
+# get correlation matrix from longitudinal invariance model
+get.cor.lg <- function(model, path, string){
 
   output <- readModels(target = file.path(path, model))$parameters
   
@@ -59,6 +73,39 @@ get.cor <- function(model, path, string){
   return(df)
 }
 
+# get bivariate correlation matrix from factor scores
+get.cor.bivar <- function(fs_data){ 
+  x <- as.matrix(fs_data) 
+  R <- Hmisc::rcorr(x)$r 
+  p <- Hmisc::rcorr(x)$P 
+  
+  ## define notions for significance levels; spacing is important.
+  mystars <- ifelse(p < .001, "***", ifelse(p < .01, "**", ifelse(p < .05, "*", "")))
+  
+  ## trunctuate the matrix that holds the correlations to two decimal
+  R <- format(round(cbind(rep(-1.11, ncol(x)), R), 3))[,-1] 
+  
+  ## build a new matrix that includes the correlations with their apropriate stars 
+  df <- matrix(paste(R, mystars, sep=""), ncol=ncol(x)) 
+  diag(df) <- paste(diag(R), " ", sep="") 
+  rownames(df) <- colnames(x) 
+  colnames(df) <- paste(colnames(x), "", sep="") 
+  
+  ## remove upper triangle
+  df <- as.matrix(df)
+  df[upper.tri(df, diag = TRUE)] <- "--"
+  df[upper.tri(df)] <- ""
+  df <- as.data.frame(df) 
+  
+  ## remove last column and return the matrix (which is now a data frame)
+  df <- cbind(df[1:length(df)])
+  
+  df[is.na(df)]<- "--"
+  names(df) <- 1:nrow(df)
+  rownames(df) <- paste(1:nrow(df), ". ", rownames(df), sep = "")
+  return(df)
+} 
+
 # check if mplus is in version 8
 check.mplus.version.fit <- function(model){
   
@@ -86,7 +133,6 @@ get.fit <- function(model, path){
   
   return(output)
 }
-
 
 # get CFA model estimate (for plotting)
 get.est <- function(model, path){
@@ -172,7 +218,6 @@ get.R2 <- function(model, path){
   return(output)
 }
 
-
 # check if mplus is in version 8
 check.mplus.version.invariance <- function(model){
   
@@ -184,7 +229,6 @@ check.mplus.version.invariance <- function(model){
   
   return(model.s)
 }
-
 
 # get measurement invariance model fits
 
@@ -234,11 +278,10 @@ calc.omega <- function(loadings, resid){
   
 }
 
-
 # get omega squared from longitudinal invariance model
-get.omega <- function(model, path){
+get.omega.lg <- function(model, path){
   
-  df <- readModels(target = file.path(path,model))$parameters
+  df <- readModels(target = file.path(path, model))$parameters
   
   if(is.null(df$stdyx.standardized) == T){
     df <- df$stdy.standardized
@@ -262,26 +305,59 @@ get.omega <- function(model, path){
                       
                   df[[2]] %>%
                         select(param, est) %>%
-                        rename(resid = est),
+                        rename(resid_var = est),
                       
                       by = "param"
                       )
  
    output <- df %>% 
     group_by(paramHeader) %>%
-    summarize(omega = calc.omega(loadings, resid)) %>%
+    summarize(omega_lg = calc.omega(loadings, resid_var)) %>%
     mutate(subscale_wave = gsub("^([^.]+)(.)(BY)$","\\1", paramHeader)
            ) %>%
-     select(subscale_wave, omega)
+     select(subscale_wave, omega_lg)
      
     
   return(output)
   
 }
 
+# get omega squared from CFA at each wave
+get.omega.bywave <- function(model, path){
+  
+  parameters <- readModels(target = file.path(path, model))$parameters
+  
+  if(is.null(parameters$stdyx.standardized) == T){
+    parameters <- parameters$stdy.standardized
+    warning("stdyx.standardized was not calculated in the CFA model, please check the .out file.",
+            call. = F)
+  } else{
+    parameters <- parameters$stdyx.standardized
+  }
+  
+  parameters <- parameters %>% 
+    filter(str_detect(paramHeader, ".BY$")) %>%
+    select(paramHeader, param, est) %>%
+    rename(loadings = est)
+  
+  r2 <- readModels(target = file.path(path, model))$parameters$r2
+  
+  r2 <- r2 %>%
+    select(param, est) %>%
+    mutate(resid_var = 1 - est) %>%
+    select(-est)
+  
+  df <- left_join(parameters, r2, by = "param")
+  
+  output <- df %>% 
+    group_by(paramHeader) %>% 
+    summarize(omega_by_wave = calc.omega(loadings, resid_var)) %>%
+    mutate(subscale_wave = gsub("^([^.]+)(.)(BY)$","\\1", paramHeader)) %>%
+    select(subscale_wave, omega_by_wave)
+  
+}
 
 # get eigenvalue
-
 get.eigenvalue <- function(model, path){
   
   # read .out as texts
@@ -317,4 +393,3 @@ get.eigenvalue <- function(model, path){
   
   return(output)
 }
-

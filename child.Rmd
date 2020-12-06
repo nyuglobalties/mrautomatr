@@ -57,14 +57,16 @@ source(here::here("R/functions.R"))
 ```
 
 ```{r user input, include = F}
-user_text <- openxlsx::read.xlsx(params$template, sheet = 1)
+user_path <- openxlsx::read.xlsx(params$template, sheet = 1)
 user_subscale <- openxlsx::read.xlsx(params$template, sheet = 2)
 user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
 
-# using assign() causes problems in knitting two documents at the same time, therefore I am manually assigning variable names here
-year <- user_text$year
-data_file_path <- user_text$data_file_path
-model_file_path <- user_text$model_file_path
+# using assign() to load variables as R objects
+for (i in 1:length(user_path)) {
+  
+  assign(names(user_path)[i], user_path[,i])
+  
+}
 
 # specify items for each subscale, without wave subscript (ordered by wave)
 subscale_data <- BBmisc::convertColsToList(user_subscale)
@@ -94,13 +96,7 @@ model_inv_lg <- split.list(na.omit(user_model$model_inv_lg),1)
 
 ```{r data preparation, include = F}
 # read in data (currently accepting dta, xlsx and csv)
-dat <- if(grepl(".dta$", user_text$data_file_path)){
-  haven::read_dta(data_file_path) %>% haven::zap_labels()
-} else if(grepl(".xlsx$", user_text$data_file_path)){
-  openxlsx::read.xlsx(data_file_path)
-} else if(grepl(".csv$", duser_text$data_file_path)){
-  read_csv(user_text$data_file_path)
-}
+dat <- read.any(data_file_path)
 
 # subset of only items for the current construct
 dat_s <- as.data.frame(select(dat, all_of(subset_data)))
@@ -113,6 +109,11 @@ subscale_item_name <- as.data.frame(subscale_data) %>%
          subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale)) %>%
   select(subscale, wave, item) %>% 
   drop_na()
+
+# read in factor score data (only for calculating bivariate correlation)
+dat_fs <- read.any(fs_data_file_path) %>%
+  select(names(user_subscale))
+
 
 ```
 
@@ -202,25 +203,71 @@ while (chunk_num >= 1) {
 
 
 <!---BLOCK_LANDSCAPE_START--->
-```{r correlation_matrix, tab.cap = "Correlation matrix", tab.id = "correlation_matrix"}
-# Correlation matrix
+```{r correlation_matrix_lg, tab.cap = "Factor correlations from the longitudinal invariance models", tab.id = "correlation_matrix_lg"}
+# Factor correlation matrix from longitudinal models
 
-df_cor <- sup.cat(get.cor(model = model_inv_lg[3], # the third one is always the scalar model
+df_cor_lg <- sup.cat(get.cor.lg(model = model_inv_lg[3], # the third one is always the scalar model
                           path = model_file_path,
                           string = ".WITH$"))
 
-df_cor <- df_cor %>%
+df_cor_lg <- df_cor_lg %>%
             rownames_to_column("variable") %>%
             rename(" " = variable)
 
-flextable(df_cor) %>%
+flextable(df_cor_lg) %>%
   add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-                  colwidths =  ncol(df_cor)) %>%
+                  colwidths =  ncol(df_cor_lg)) %>%
   align(part = "all") %>% 
   font(fontname = "Times", part = "all") %>%
   bold(part = "header") %>%
   bold(j = " ", part = "body") %>%
   fontsize(size = 10, part = "all") %>% 
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+```
+\newpage
+
+```{r correlation_matrix_bivar, tab.cap = "Bivariate correlations among factors", tab.id = "correlation_matrix_bivar"}
+# Bivariate correlation matrix
+
+df_cor_bivar <- get.cor.bivar(dat_fs)
+
+df_cor_bivar <- df_cor_bivar %>%
+            rownames_to_column("variable") %>%
+            rename(" " = variable)
+
+flextable(df_cor_bivar) %>%
+  add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+                  colwidths =  ncol(df_cor_bivar)) %>%
+  align(part = "all") %>% 
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  bold(j = " ", part = "body") %>%
+  fontsize(size = 10, part = "all") %>% 
+  italic(part = "footer") %>%
+  set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r correlation_matrix_item, tab.cap = "Bivariate correlations among all items", tab.id = "correlation_matrix_item", eval = F}
+# Bivariate correlation matrix among all items
+# Warning!: this could be really long and takes some time to run, so the default is not to evaluate this chunk unless otherwise specified.
+
+df_cor_item <- get.cor.bivar(dat_s)
+
+df_cor_item <- df_cor_item %>%
+            rownames_to_column("variable") %>%
+            rename(" " = variable)
+
+flextable(df_cor_item) %>%
+  add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.",
+                  colwidths =  ncol(df_cor_item)) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>%
+  bold(part = "header") %>%
+  bold(j = " ", part = "body") %>%
+  fontsize(size = 10, part = "all") %>%
   italic(part = "footer") %>%
   set_table_properties(layout = "autofit")
 ```
@@ -399,6 +446,17 @@ for(i in 1:length(subscale_data)){
   
 }
 
+# a list of omega by wave
+omega_by_wave_ls <- sup.cat(lapply(model_cfa, get.omega.bywave, path = model_file_path))
+
+# add wave tag to subscale
+for (i in 1:length(omega_by_wave_ls)) {
+  omega_by_wave_ls[[i]]$subscale_wave <- paste(omega_by_wave_ls[[i]]$subscale_wave,
+                                          i,
+                                          sep = "_")
+}
+
+
 total_stats <- map_dfr(total_stats, bind_rows) %>% 
             round(digits = 3) %>%
             mutate(subscale_wave = unique(
@@ -406,11 +464,23 @@ total_stats <- map_dfr(total_stats, bind_rows) %>%
                     gsub("^(T)(\\d+)$","\\2",subscale_item_name$wave),
                     sep = "_"))
             ) %>%
-  left_join(sup.cat(get.omega(model_inv_lg[3],path = model_file_path)), by = "subscale_wave") %>% # merge in omega squared 
+  left_join(sup.cat(get.omega.lg(model = model_inv_lg[3],
+                              path = model_file_path)), 
+            by = "subscale_wave") %>% 
+  left_join(map_dfr(omega_by_wave_ls, bind_rows),
+            by = "subscale_wave") %>% # merge in omega squared 
    mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale_wave),
          wave = paste("T", wave, sep = ""),
          subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale_wave)) %>%
-  select(subscale, wave, omega, everything(), -subscale_wave)
+  select(subscale, wave, omega_lg, omega_by_wave, everything(), -subscale_wave)
+
+if(sum(is.na(total_stats$omega_lg)) > 0){
+  warning("Subscales or subscale names are different in CFA and in the longitudinal invariance model. Please double check.")
+}
+
+if(sum(is.na(total_stats$omega_by_wave)) > 0){
+  warning("Subscales or subscale names are different in CFA and in the input file template. Please double check.")
+}
 
 total_stats <- as_grouped_data(total_stats, groups = c( "wave"))
 
