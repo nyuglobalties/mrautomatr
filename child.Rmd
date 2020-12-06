@@ -9,6 +9,23 @@ params:
   set_title: "Measurement Report"
   set_author: "Michael Wu"
   template: "Template/input_template_lebanon_cs.xlsx"
+  descriptive: TRUE
+  ds_plot: TRUE
+  correlation_matrix_lg: TRUE
+  correlation_matrix_bivar: TRUE
+  correlation_matrix_item: FALSE # this might crash the document, so the default is False
+  efa_screeplot: TRUE
+  cfa_model_fit: TRUE
+  cfa_model_plot: TRUE
+  cfa_model_parameters: TRUE
+  cfa_r2: TRUE
+  internal_reliability: TRUE
+  summary_item_statistics: TRUE
+  item_total_statistics: TRUE
+  inv_tx: TRUE
+  inv_gender: TRUE
+  inv_age: TRUE
+  inv_lg: TRUE
 output: 
   officedown::rdocx_document:
     mapstyles:
@@ -154,9 +171,7 @@ TBD...
 
 ### Descriptive Statistics
 
-see Table \@ref(tab:descriptive).
-
-```{r descriptive, tab.cap="Descriptive statistics", tab.id = "descriptive"}
+```{r descriptive, tab.cap="Descriptive statistics", tab.id = "descriptive", eval = params$descriptive}
 ds <- skimr::skim(dat_s) %>% 
   mutate_if(is.numeric, round, 3) %>%
   rename_with( ~ gsub("^(numeric.)(.*)$", "\\2", .x), starts_with("numeric.")) %>%
@@ -177,7 +192,7 @@ flextable(ds) %>%
 ```
 
 \newpage
-```{r ds_plot, fig.cap = "Item distribution",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300}
+```{r ds_plot, fig.cap = "Item distribution",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300, eval = params$ds_plot}
 
 # descriptive plots
 
@@ -203,7 +218,7 @@ while (chunk_num >= 1) {
 
 
 <!---BLOCK_LANDSCAPE_START--->
-```{r correlation_matrix_lg, tab.cap = "Factor correlations from the longitudinal invariance models", tab.id = "correlation_matrix_lg"}
+```{r correlation_matrix_lg, tab.cap = "Factor correlations from the longitudinal invariance models", tab.id = "correlation_matrix_lg", eval = params$correlation_matrix_lg}
 # Factor correlation matrix from longitudinal models
 
 df_cor_lg <- sup.cat(get.cor.lg(model = model_inv_lg[3], # the third one is always the scalar model
@@ -227,7 +242,7 @@ flextable(df_cor_lg) %>%
 ```
 \newpage
 
-```{r correlation_matrix_bivar, tab.cap = "Bivariate correlations among factors", tab.id = "correlation_matrix_bivar"}
+```{r correlation_matrix_bivar, tab.cap = "Bivariate correlations among factors", tab.id = "correlation_matrix_bivar", eval = params$correlation_matrix_bivar}
 # Bivariate correlation matrix
 
 df_cor_bivar <- get.cor.bivar(dat_fs)
@@ -250,7 +265,7 @@ flextable(df_cor_bivar) %>%
 
 \newpage
 
-```{r correlation_matrix_item, tab.cap = "Bivariate correlations among all items", tab.id = "correlation_matrix_item", eval = F}
+```{r correlation_matrix_item, tab.cap = "Bivariate correlations among all items", tab.id = "correlation_matrix_item", eval = params$correlation_matrix_item}
 # Bivariate correlation matrix among all items
 # Warning!: this could be really long and takes some time to run, so the default is not to evaluate this chunk unless otherwise specified.
 
@@ -277,7 +292,7 @@ flextable(df_cor_item) %>%
 ### Factor Analysis
 
 #### EFA and CFA
-```{r efa_screeplot, fig.cap = "EFA model screeplots at all waves", fig.id = "efa_screeplot", fig.height = 4, fig.width = 9, dpi = 300}
+```{r efa_screeplot, fig.cap = "EFA model screeplots at all waves", fig.id = "efa_screeplot", fig.height = 4, fig.width = 9, dpi = 300, eval = params$efa_screeplot}
 
 df_efa <- sup.cat(map_dfr(lapply(model_efa, get.eigenvalue, path = model_file_path),bind_rows))
 
@@ -290,7 +305,7 @@ ggplot(df_efa, aes(x = nfactor, y = ev)) +
 ```
 \newpage
 
-```{r, cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit"}
+```{r cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit", eval = params$cfa_model_fit}
 
 df_cfa <- sup.cat(map_dfr(lapply(model_cfa, get.fit, path = model_file_path),bind_rows))
 
@@ -309,7 +324,7 @@ flextable(df_cfa) %>%
 ```
 
 \newpage
-```{r, cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300}
+```{r cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300, eval = params$cfa_model_plot}
 
 if(length(unique(sapply(sup.cat(lapply(model_cfa, get.est, path = model_file_path)), nrow))) > 1){
   stop("The factor structure has to be the same across waves in order to draw the graph. Please check all CFA models.", call. = F)
@@ -329,7 +344,7 @@ semPaths(model_cfa_str, style="lisrel", layout = "tree",
 
 \newpage
 
-```{r CFA_model_parameters, tab.cap = "CFA model parameters at all waves", tab.id = "CFA_model_parameters"}
+```{r cfa_model_parameters, tab.cap = "CFA model parameters at all waves", tab.id = "cfa_model_parameters", eval = params$cfa_model_parameters}
 df_cfa_modparam <- sup.cat(lapply(model_cfa, get.modparam, path = model_file_path) %>% 
   reduce(left_join, by = c("paramHeader", "param")))
 
@@ -343,7 +358,7 @@ flextable(df_cfa_modparam) %>%
 
 \newpage
 
-```{r cfa_r2, tab.cap = "CFA model R-squared at all waves", tab.id = "CFA_r2"}
+```{r cfa_r2, tab.cap = "CFA model R-squared at all waves", tab.id = "cfa_r2", eval = params$cfa_r2}
 
 df_cfa_r2 <- sup.cat(lapply(model_cfa, get.R2, path = model_file_path)) %>% 
   reduce(left_join, by = c("param"))
@@ -362,7 +377,7 @@ flextable(df_cfa_r2) %>%
 #### Internal Reliability and Correlations
 
 
-```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability"}
+```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability", eval = params$internal_reliability}
 
 # (example: https://rpubs.com/hauselin/reliabilityanalysis)
 
@@ -408,7 +423,7 @@ as_flextable(alpha_drop) %>%
 
 \newpage
 
-```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics"}
+```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics", eval = params$summary_item_statistics}
 
 item_stats = list()
 
@@ -436,7 +451,7 @@ as_flextable(item_stats) %>%
 
 \newpage
 
-```{r item_total_statistics, tab.cap = "Item total statistics", tab.id = "item_total_statistics"}
+```{r item_total_statistics, tab.cap = "Item total statistics", tab.id = "item_total_statistics", eval = params$item_total_statistics}
 
 total_stats = list()
 
@@ -499,7 +514,7 @@ as_flextable(total_stats) %>%
 
 #### Measurement Invariance
 
-```{r inv_tx, tab.cap = "Treatment group invariance model fit", tab.id = "inv_tx"}
+```{r inv_tx, tab.cap = "Treatment group invariance model fit", tab.id = "inv_tx", eval = params$inv_tx}
 
 df_inv_tx <- sup.cat(map_dfr(lapply(model_inv_tx, get.invariance, path = model_file_path), bind_rows))
 
@@ -542,7 +557,7 @@ as_flextable(df_inv_tx) %>%
 
 ```
 \newpage
-```{r inv_gender, tab.cap = "Gender invariance model fit", tab.id = "inv_gender"}
+```{r inv_gender, tab.cap = "Gender invariance model fit", tab.id = "inv_gender", eval = params$inv_gender}
 
 df_inv_gender <- sup.cat(map_dfr(lapply(model_inv_gender, get.invariance, path = model_file_path), bind_rows))
 
@@ -584,7 +599,7 @@ as_flextable(df_inv_gender) %>%
 
 ```
 \newpage
-```{r inv_age, tab.cap = "Age invariance model fit", tab.id = "inv_age"}
+```{r inv_age, tab.cap = "Age invariance model fit", tab.id = "inv_age", eval = params$inv_age}
 
 df_inv_age <- sup.cat(map_dfr(lapply(model_inv_age, get.invariance, path = model_file_path), bind_rows))
 
@@ -626,7 +641,7 @@ as_flextable(df_inv_age) %>%
 
 ```
 \newpage
-```{r inv_lg, tab.cap = "Longitudinal invariance model fit", tab.id = "inv_lg"}
+```{r inv_lg, tab.cap = "Longitudinal invariance model fit", tab.id = "inv_lg", eval = params$inv_lg}
 
 df_inv_lg <- sup.cat(get.invariance(model_inv_lg, path = model_file_path))
 
@@ -668,8 +683,4 @@ flextable(df_inv_lg) %>%
 ## Reference
 
 TBD...
-
-```{r}
-rm(list = ls())
-```
 

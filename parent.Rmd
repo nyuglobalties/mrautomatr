@@ -28,7 +28,8 @@ render_report(template = "Template/input_template_lebanon_cs.xlsx",
 ```
 
 ```{r knit one report_manually set parameters}
-rmarkdown::render("child.Rmd", params = "ask") 
+rmarkdown::render("child.Rmd", params = "ask",
+                  output_file = "Report_lebanon_cs.docx")
 ```
 
 
