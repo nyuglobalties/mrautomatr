@@ -35,7 +35,7 @@ rmarkdown::render("child.Rmd", params = "ask",
 
 ```{r knit multiple reports separately}
 # get input template file names
-input_templates <- paste0("Template/",list.files("Template", pattern = "\\.xlsx$"))
+input_templates <- paste0("Template/", list.files("Template", pattern = "^[a-zA-Z].*\\.xlsx$"))
 
 # get measure names
 index <- gsub("(Template/input_template_)(.*)(\\.xlsx)$", "\\2", input_templates)
