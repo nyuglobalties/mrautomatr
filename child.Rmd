@@ -8,7 +8,8 @@ params:
   storecache: no
   set_title: "Measurement Report"
   set_author: "Michael Wu"
-  template: "Template/input_template_lebanon_cs.xlsx"
+  template: "Template/input_template_niger_psra.xlsx"
+  item: TRUE
   descriptive: TRUE
   ds_plot: TRUE
   correlation_matrix_lg: TRUE
@@ -73,10 +74,11 @@ ft <- fp_text(shading.color='#EFEFEF',
 source(here::here("R/functions.R"))
 ```
 
-```{r user input, include = F}
+```{r user input}
 user_path <- openxlsx::read.xlsx(params$template, sheet = 1)
 user_subscale <- openxlsx::read.xlsx(params$template, sheet = 2)
 user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
+user_description <- openxlsx::read.xlsx(params$template, sheet = 4)
 
 # using assign() to load variables as R objects
 for (i in 1:length(user_path)) {
@@ -111,7 +113,7 @@ model_inv_age <- split.list(na.omit(user_model$model_inv_age),3)
 model_inv_lg <- split.list(na.omit(user_model$model_inv_lg),1)
 ```
 
-```{r data preparation, include = F}
+```{r data preparation}
 # read in data (currently accepting dta, xlsx and csv)
 dat <- read.any(data_file_path)
 
@@ -128,9 +130,11 @@ subscale_item_name <- as.data.frame(subscale_data) %>%
   drop_na()
 
 # read in factor score data (only for calculating bivariate correlation)
-dat_fs <- read.any(fs_data_file_path) %>%
+  if(is.null(read.any(fs_data_file_path)) == T){
+    stop("Factor score data file path is not specified, please double check. Also, please make sure that the factor score dataset has the subscale names as variable names, the same as the ones specified in user_subscale.",call. = F)} else{
+      dat_fs <- read.any(fs_data_file_path) %>%
   select(names(user_subscale))
-
+    }
 
 ```
 
@@ -157,7 +161,21 @@ This document is built using the package `r ftext("officedown", ft)`.
 
 ## Data and Sample
 
-This report presents descriptive and psychometric information of the measures used for `r year`.
+This report presents descriptive and psychometric information for `r measure` in `r year`.
+
+Table \@ref(tab:item) presents the descriptions of the items used in `r measure`.
+
+```{r item, tab.cap="Item description", tab.id = "item", eval = params$item}
+
+# remove the auto-created dots when reading in excel sheets
+names(user_description) <- gsub("\\.", " ", names(user_description))
+
+flextable(user_description) %>%
+  align(part = "all") %>%
+  font(fontname = "Times", part = "all") %>% 
+  line_spacing(space = 1) %>%
+  set_table_properties(layout = "autofit")
+```
 
 \newpage
 
