@@ -34,7 +34,23 @@ install.packages("officedown");install.packages("officer");install.packages("tid
 <img width="378" alt="Screen Shot 2020-12-21 at 11 51 06 AM" src="https://user-images.githubusercontent.com/26876926/102801413-33934b80-4383-11eb-9c73-e13861f00436.png">
 
 - You should have the following files in the folder:
-```├── MR-automation.Rproj├── R│   ├── MR_master.Rmd│   └── functions.R├── README.md├── Report_lebanon_cs.docx├── Report_niger_psra.docx├── Template│   ├── MR_word_template.Rmd│   ├── MR_word_template.docx│   ├── bookdown_template.docx│   ├── input_template_lebanon_cs.xlsx│   ├── input_template_niger_psra.xlsx│   └── officedown_template.Rmd├── child.Rmd└── parent.Rmd
+```
+├── MR-automation.Rproj
+├── R
+│   ├── MR_master.Rmd
+│   └── functions.R
+├── README.md
+├── Report_lebanon_cs.docx
+├── Report_niger_psra.docx
+├── Template
+│   ├── MR_word_template.Rmd
+│   ├── MR_word_template.docx
+│   ├── bookdown_template.docx
+│   ├── input_template_lebanon_cs.xlsx
+│   ├── input_template_niger_psra.xlsx
+│   └── officedown_template.Rmd
+├── child.Rmd
+└── parent.Rmd
 ```
 
 ### Step 2: Set the parameters
@@ -143,11 +159,6 @@ There are three ways to generate reports:
 | `inv_lg`                   | print model fit for the longitudinal invariance model                                                                                              |
 
 
-
-
-
-
-
-
-
-
+3. Generate multiple separate reports for multiple measures using default settings
+    - Run the `knit multiple reports separately` chunk
+    - It looks for all `.xlsx` files in the "Template/" folder and knit them all at once. This is particularly helpful if you want to generate a patch of reports.
