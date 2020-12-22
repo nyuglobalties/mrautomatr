@@ -20,7 +20,6 @@ render_report = function(template, index, title) {
 
 ```
 
-
 ```{r knit one report_quick knit}
 render_report(template = "Template/input_template_lebanon_cs.xlsx",
               index = "lebanon_cs",
@@ -31,7 +30,6 @@ render_report(template = "Template/input_template_lebanon_cs.xlsx",
 rmarkdown::render("child.Rmd", params = "ask",
                   output_file = "Report_lebanon_cs.docx")
 ```
-
 
 ```{r knit multiple reports separately}
 # get input template file names
