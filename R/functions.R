@@ -1,3 +1,8 @@
+# check for empty lists
+is.empty <- function(x) {
+  return(length(x)==0)
+}
+
 # load multiple types of data files
 read.any <- function(path){
   

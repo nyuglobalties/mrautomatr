@@ -497,22 +497,23 @@ total_stats <- map_dfr(total_stats, bind_rows) %>%
                     gsub("^(T)(\\d+)$","\\2",subscale_item_name$wave),
                     sep = "_"))
             ) %>%
-  left_join(sup.cat(get.omega.lg(model = model_inv_lg[3],
+  {if (is.empty(unlist(model_inv_lg)) == F) 
+    left_join(.,sup.cat(get.omega.lg(model = model_inv_lg[3],
                               path = model_file_path)), 
-            by = "subscale_wave") %>% 
+            by = "subscale_wave") else .} %>% 
   left_join(map_dfr(omega_by_wave_ls, bind_rows),
             by = "subscale_wave") %>% # merge in omega squared 
    mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale_wave),
          wave = paste("T", wave, sep = ""),
          subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale_wave)) %>%
-  select(subscale, wave, omega_lg, omega_by_wave, everything(), -subscale_wave)
+  select(subscale, wave, everything(), -subscale_wave)
 
 if(sum(is.na(total_stats$omega_lg)) > 0){
-  warning("Subscales or subscale names are different in CFA and in the longitudinal invariance model. Please double check.")
+  stop("Subscales or subscale names are different in CFA and in the longitudinal invariance model. Please double check.")
 }
 
 if(sum(is.na(total_stats$omega_by_wave)) > 0){
-  warning("Subscales or subscale names are different in CFA and in the input file template. Please double check.")
+  stop("Subscales or subscale names are different in CFA and in the input file template. Please double check.")
 }
 
 total_stats <- as_grouped_data(total_stats, groups = c( "wave"))
