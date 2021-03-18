@@ -54,13 +54,13 @@ knitr::opts_chunk$set(
   fig.cap.sep = ": ")
 
 # packages
-library(officedown)
-library(officer)
-library(tidyverse)
-library(psych)
-library(MplusAutomation)
-library(semPlot)
-library(flextable)
+# library(officedown)
+# library(officer)
+# library(tidyverse)
+# library(psych)
+# library(MplusAutomation)
+# library(semPlot)
+# library(flextable)
 
 fp <- fp_par(
   text.align = "center", 

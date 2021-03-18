@@ -1,0 +1,24 @@
+Package: mrautomatr
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Zezhen",
+           family = "Wu",
+           role = c("aut", "cre"),
+           email = "zw1429@nyu.edu",
+           comment = c(ORCID = "0000-0002-5150-6736"))
+Description: This project is developed to generate lengthy but informative measurement reports from survey data and Mplus measurement models.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to
+    pick a license
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    officedown,
+    officer,
+    dplyr,
+    psych,
+    MplusAutomation,
+    semPlot,
+    flextable
