@@ -6,9 +6,10 @@
 #' @return A data.frame of wave tags, corresponding model estimates and SEs
 #' @note stdyx.standardized is used if available. Otherwise, stdy.standardized is used.
 #' @seealso `get.est`
+#' @importFrom magrittr %>%
 get.modparam <- function(model, path){
 
-  output <- readModels(target = file.path(path,model))$parameters
+  output <- MplusAutomation::readModels(target = file.path(path,model))$parameters
 
   if(is.null(output$stdyx.standardized) == T){
     output <- output$stdy.standardized
@@ -18,10 +19,11 @@ get.modparam <- function(model, path){
     output <- output$stdyx.standardized
   }
 
-  output <- as_tibble(output)
+  output <- tibble::as_tibble(output)
 
   # accepts item names and threshold names with or without wave tags
-  output <- output %>% mutate(
+  output <- output %>%
+    dplyr::mutate(
     param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param)
   )
 
@@ -30,7 +32,8 @@ get.modparam <- function(model, path){
                 gsub("^([a-zA-Z]+)(\\d+)(.*)$", "\\2", model),
                 sep = "")
 
-  output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
+  output <- output %>%
+    dplyr::rename_with(~paste( .x, wave, sep = ""), !dplyr::starts_with("param"))
 
   return(output)
 }

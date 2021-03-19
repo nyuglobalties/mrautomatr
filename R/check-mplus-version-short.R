@@ -9,15 +9,17 @@
 #'
 #' @seealso `mplus.version.fit.long`
 #' @examples
-#' df <- readModels(target = file.path(path,model))$summaries
+#' \dontrun{
+#' df <- MplusAutomation::readModels(target = file.path(path,model))$summaries
 #' mplus.version.fit.short(df)
+#' }
 mplus.version.fit.short <- function(df){
 
   if(as.numeric(df$Mplus.version) >= 8){ # (Column `SRMR` doesn't exist. because the dfs output from Mplus 7 don't have SRMR)
-    df.s <- select(df, Parameters, ChiSqM_Value, ChiSqM_DF, ChiSqM_PValue, CFI, TLI, RMSEA_Estimate, SRMR, Filename)
+    df.s <- dplyr::select(df, Parameters, ChiSqM_Value, ChiSqM_DF, ChiSqM_PValue, CFI, TLI, RMSEA_Estimate, SRMR, Filename)
     names(df.s) <- c("k", "ChiSq", "df", "p", "CFI", "TLI", "RMSEA", "SRMR", "Filename")} else{
       warning("Upgrade Mplus to Version 8 to include SRMR as a df fit index. Mplus Version 7 reports WRMR instead.")
-      df.s <- select(df, Parameters, ChiSqM_Value, ChiSqM_DF, ChiSqM_PValue, CFI, TLI, RMSEA_Estimate, WRMR, Filename)
+      df.s <- dplyr::select(df, Parameters, ChiSqM_Value, ChiSqM_DF, ChiSqM_PValue, CFI, TLI, RMSEA_Estimate, WRMR, Filename)
       names(df.s) <- c("k", "ChiSq", "df", "p", "CFI", "TLI", "RMSEA", "WRMR", "Filename")
     }
 

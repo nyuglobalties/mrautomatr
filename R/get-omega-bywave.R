@@ -11,10 +11,11 @@
 #' @return A data.frame with two variables: `subscale_wave` and `omega_by_wave`
 #'
 #' @note Mac users can hit `command + option + c` in finder to quickly get the local file path.
+#' @importFrom magrittr %>%
 
 get.omega.bywave <- function(model, path){
 
-  parameters <- readModels(target = file.path(path, model))$parameters
+  parameters <- MplusAutomation::readModels(target = file.path(path, model))$parameters
 
   if(is.null(parameters$stdyx.standardized) == T){
     parameters <- parameters$stdy.standardized
@@ -25,24 +26,24 @@ get.omega.bywave <- function(model, path){
   }
 
   parameters <- parameters %>%
-    filter(str_detect(paramHeader, ".BY$")) %>%
-    select(paramHeader, param, est) %>%
-    rename(loadings = est)
+    dplyr::filter(stringr::str_detect(paramHeader, ".BY$")) %>%
+    dplyr::select(paramHeader, param, est) %>%
+    dplyr::rename(loadings = est)
 
-  r2 <- readModels(target = file.path(path, model))$parameters$r2
+  r2 <- MplusAutomation::readModels(target = file.path(path, model))$parameters$r2
 
   r2 <- r2 %>%
-    select(param, est) %>%
-    mutate(resid_var = 1 - est) %>%
-    select(-est)
+    dplyr::select(param, est) %>%
+    dplyr::mutate(resid_var = 1 - est) %>%
+    dplyr::select(-est)
 
-  df <- left_join(parameters, r2, by = "param")
+  df <- dplyr::left_join(parameters, r2, by = "param")
 
   output <- df %>%
-    group_by(paramHeader) %>%
-    summarize(omega_by_wave = calc.omega(loadings, resid_var)) %>%
-    mutate(subscale_wave = gsub("^([^.]+)(.)(BY)$","\\1", paramHeader)) %>%
-    select(subscale_wave, omega_by_wave)
+    dplyr::group_by(paramHeader) %>%
+    dplyr::summarize(omega_by_wave = calc.omega(loadings, resid_var)) %>%
+    dplyr::mutate(subscale_wave = gsub("^([^.]+)(.)(BY)$","\\1", paramHeader)) %>%
+    dplyr::select(subscale_wave, omega_by_wave)
 
   return(output)
 }

@@ -8,10 +8,12 @@
 #' @return A docx document with the name "Report_index.docx"
 #'
 #' @examples
+#' \dontrun{
 #' render_report(template = "Template/input_template_lebanon_cs.xlsx",
 #'               index = "lebanon_cs",
 #'               title = "Lebanon Year 1 (2016-2017)",
 #'               output_dir = "~/Box/Box 3EA Team Folder/3EA Analysis/3EA Lebanon_Analysis")
+#'               }
 render_report = function(template, index, title, output_dir) {
   rmarkdown::render(
     "child.Rmd", params = list(

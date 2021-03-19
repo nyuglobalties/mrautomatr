@@ -11,10 +11,11 @@
 #' @return A data.frame with two variables: `subscale_wave` and `omega_lg`
 #'
 #' @note Mac users can hit `command + option + c` in finder to quickly get the local file path.
+#' @importFrom magrittr %>%
 
 get.omega.lg <- function(model, path){
 
-  df <- readModels(target = file.path(path, model))$parameters
+  df <- MplusAutomation::readModels(target = file.path(path, model))$parameters
 
   if(is.null(df$stdyx.standardized) == T){
     df <- df$stdy.standardized
@@ -24,31 +25,30 @@ get.omega.lg <- function(model, path){
     df <- df$stdyx.standardized
   }
 
-  df <- as_tibble(df)
+  df <- tibble::as_tibble(df)
 
   df <- df %>%
-    filter(str_detect(paramHeader, "(.*)(.)(BY)$|Residual.Variances")) %>%
-    mutate(type = gsub("^([^.]+)(.)([a-zA-Z]+)$", "\\3", paramHeader)) %>%
-    group_by(type) %>%
-    group_split()
+    dplyr::filter(stringr::str_detect(paramHeader, "(.*)(.)(BY)$|Residual.Variances")) %>%
+    dplyr::mutate(type = gsub("^([^.]+)(.)([a-zA-Z]+)$", "\\3", paramHeader)) %>%
+    dplyr::group_by(type) %>%
+    dplyr::group_split()
 
-  df <- left_join(df[[1]] %>%
-                    select(paramHeader, param, est) %>%
-                    rename(loadings = est),
+  df <- dplyr::left_join(df[[1]] %>%
+                    dplyr::select(paramHeader, param, est) %>%
+                    dplyr::rename(loadings = est),
 
                   df[[2]] %>%
-                    select(param, est) %>%
-                    rename(resid_var = est),
+                    dplyr::select(param, est) %>%
+                    dplyr::rename(resid_var = est),
 
                   by = "param"
   )
 
   output <- df %>%
-    group_by(paramHeader) %>%
-    summarize(omega_lg = calc.omega(loadings, resid_var)) %>%
-    mutate(subscale_wave = gsub("^([^.]+)(.)(BY)$","\\1", paramHeader)
-    ) %>%
-    select(subscale_wave, omega_lg)
+    dplyr::group_by(paramHeader) %>%
+    dplyr::summarize(omega_lg = calc.omega(loadings, resid_var)) %>%
+    dplyr::mutate(subscale_wave = gsub("^([^.]+)(.)(BY)$","\\1", paramHeader)) %>%
+    dplyr::select(subscale_wave, omega_lg)
 
 
   return(output)

@@ -1,5 +1,5 @@
 Package: mrautomatr
-Title: What the Package Does (One Line, Title Case)
+Title: Automate TIES Measurement Report
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Zezhen",
@@ -8,8 +8,7 @@ Authors@R:
            email = "zw1429@nyu.edu",
            comment = c(ORCID = "0000-0002-5150-6736"))
 Description: This project is developed to generate lengthy but informative measurement reports from survey data and Mplus measurement models.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -21,4 +20,16 @@ Imports:
     psych,
     MplusAutomation,
     semPlot,
-    flextable
+    flextable,
+    purrr,
+    magrittr,
+    readr,
+    here,
+    tibble,
+    Hmisc,
+    stringr,
+    openxlsx,
+    xfun,
+    withr,
+    rmarkdown,
+    haven

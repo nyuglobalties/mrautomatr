@@ -4,16 +4,18 @@
 #' @param path Mplus model file path
 #'
 #' @return A data.frame of wave tags, corresponding R2 estimates, SEs, p values and residual variances
+#' @importFrom magrittr %>%
 get.R2 <- function(model, path){
 
-  output <- readModels(target = file.path(path,model))$parameters$r2
+  output <- MplusAutomation::readModels(target = file.path(path,model))$parameters$r2
 
   if(is.null(output) == T){stop("R2 was not calculated in the Mplus model, please check the .out file.",call. = F)}
 
-  output <- as_tibble(output)
+  output <- tibble::as_tibble(output)
 
   # accepts item names and threshold names with or without wave tags
-  output <- output %>% mutate(
+  output <- output %>%
+    dplyr::mutate(
     param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param)
   )
 
@@ -22,7 +24,8 @@ get.R2 <- function(model, path){
                 gsub("^([a-zA-Z]+)(\\d+)(.*)$", "\\2", model),
                 sep = "")
 
-  output <- output %>% rename_with(~paste( .x, wave, sep = ""), !starts_with("param"))
+  output <- output %>%
+    dplyr::rename_with(~paste( .x, wave, sep = ""), !dplyr::starts_with("param"))
 
 
   return(output)

@@ -18,8 +18,10 @@ if no, it reports WRMR, which was built in replace of SRMR in earlier versions o
 In the knitted report, the short version is used for CFA model fits, and the long version is used for invariance model fits.
 }
 \examples{
-df <- readModels(target = file.path(path,model))$summaries
+\dontrun{
+df <- MplusAutomation::readModels(target = file.path(path,model))$summaries
 mplus.version.fit.short(df)
+}
 }
 \seealso{
 \code{mplus.version.fit.long}

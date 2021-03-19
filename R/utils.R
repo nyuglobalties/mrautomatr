@@ -1,3 +1,12 @@
+# declare global variables (in Mplus .out and imported to R)
+utils::globalVariables(
+  c("param", "paramHeader", "type","est",
+    "Filename", "Parameters", "CFI", "TLI", "RMSEA_Estimate",
+    "SRMR", "WRMR", "ChiSqM_Value", "ChiSqM_DF", "ChiSqM_PValue",
+    "loadings", "resid_var",
+    "subscale_wave", "omega_by_wave", "omega_lg")
+)
+
 # check for empty lists
 is.empty <- function(x) {
   return(length(x)==0)
@@ -12,7 +21,7 @@ read.any <- function(path){
   } else if(grepl(".xlsx$", path)){
     openxlsx::read.xlsx(path)
   } else if(grepl(".csv$", path)){
-    read_csv(path)
+    readr::read_csv(path)
   }
 
   return(data)

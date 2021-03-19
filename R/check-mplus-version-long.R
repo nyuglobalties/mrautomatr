@@ -15,14 +15,16 @@
 #' @note This function selects ChiSqBaseline_Value and ChiSqDiffTest_Value and their corresponding df and p value,
 #' which are not included in `mplus.version.fit.short`
 #' @examples
-#' df <- readModels(target = file.path(path,model))$summaries
+#' \dontrun{
+#' df <- MplusAutomation::readModels(target = file.path(path,model))$summaries
 #' mplus.version.fit.long(df)
+#' }
 mplus.version.fit.long <- function(df){
 
   if(as.numeric(df$Mplus.version) > 8){ # (Column `SRMR` doesn't exist. because the dfs output from Mplus 7 don't have SRMR)
-    df.s <- select(df, Parameters:RMSEA_Estimate, SRMR, Filename)} else{
+    df.s <- dplyr::select(df, Parameters:RMSEA_Estimate, SRMR, Filename)} else{
       warning("Upgrade Mplus to Version 8 to include SRMR as a df fit index. Mplus Version 7 reports WRMR instead.")
-      df.s <- select(df, Parameters:RMSEA_Estimate, WRMR, Filename)
+      df.s <- dplyr::select(df, Parameters:RMSEA_Estimate, WRMR, Filename)
     }
 
   return(df.s)

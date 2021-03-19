@@ -18,26 +18,26 @@ get.invariance.fit <- function(inv_models, path){
   if(is.na(scalar) == T){stop("Scalar invariance model was not available, please add to the source folder.",call. = T)}
 
 
-  x1 <- readModels(target = file.path(path,config))$summaries
+  x1 <- MplusAutomation::readModels(target = file.path(path,config))$summaries
   if(is.null(x1) == T){stop("Model fits were not calculated in the configural invariance model, please check the .out file.",call. = F)}
 
-  x2 <- readModels(target = file.path(path,metric))$summaries
+  x2 <- MplusAutomation::readModels(target = file.path(path,metric))$summaries
   if(is.null(x2) == T){stop("Model fits were not calculated in the metric invariance model, please check the .out file.",call. = F)}
 
-  x3 <- readModels(target = file.path(path,scalar))$summaries
+  x3 <- MplusAutomation::readModels(target = file.path(path,scalar))$summaries
   if(is.null(x2) == T){stop("Model fits were not calculated in the scalar invariance model, please check the .out file.",call. = F)}
 
 
-  output_config <- as_tibble(x1)
-  output_metric <- as_tibble(x2)
-  output_scalar <- as_tibble(x3)
+  output_config <- tibble::as_tibble(x1)
+  output_metric <- tibble::as_tibble(x2)
+  output_scalar <- tibble::as_tibble(x3)
 
   output_config <- mplus.version.fit.long(output_config)
   output_metric <- mplus.version.fit.long(output_metric)
   output_scalar <- mplus.version.fit.long(output_scalar)
 
-  output <- bind_rows(output_config, output_metric, output_scalar)
-  output <- select(output, -c(CFI:Filename), CFI:Filename)
+  output <- dplyr::bind_rows(output_config, output_metric, output_scalar)
+  output <- dplyr::select(output, -c(CFI:Filename), CFI:Filename)
 
   return(output)
 }

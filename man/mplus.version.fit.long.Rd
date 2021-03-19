@@ -26,8 +26,10 @@ This function selects ChiSqBaseline_Value and ChiSqDiffTest_Value and their corr
 which are not included in \code{mplus.version.fit.short}
 }
 \examples{
-df <- readModels(target = file.path(path,model))$summaries
+\dontrun{
+df <- MplusAutomation::readModels(target = file.path(path,model))$summaries
 mplus.version.fit.long(df)
+}
 }
 \seealso{
 \code{mplus.version.fit.short}

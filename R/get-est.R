@@ -6,10 +6,11 @@
 #' @return A data.frame of wave tags and corresponding model estimates
 #' @note stdyx.standardized is used if available. Otherwise, stdy.standardized is used.
 #' @seealso `get.modparam`
+#' @importFrom magrittr %>%
 
 get.est <- function(model, path){
 
-  output <- readModels(target = file.path(path,model))$parameters
+  output <- MplusAutomation::readModels(target = file.path(path,model))$parameters
 
   if(is.null(output$stdyx.standardized) == T){
     output <- output$stdy.standardized
@@ -19,7 +20,7 @@ get.est <- function(model, path){
     output <- output$stdyx.standardized
   }
 
-  output <- as_tibble(output)
+  output <- tibble::as_tibble(output)
 
   wave <- paste("T",
                 gsub("^([a-zA-Z]+)(\\d+)(.*)$", "\\2", model),
@@ -27,9 +28,9 @@ get.est <- function(model, path){
                 sep = "")
 
   output <- output %>%
-    filter(grepl(".BY$", paramHeader)) %>%
-    select(est) %>%
-    mutate(est = paste(wave, est, "\n", sep = ""))
+    dplyr::filter(grepl(".BY$", paramHeader)) %>%
+    dplyr::select(est) %>%
+    dplyr::mutate(est = paste(wave, est, "\n", sep = ""))
 
   return(output)
 

@@ -11,7 +11,7 @@
 #' @seealso `get.cor.bivar`
 get.cor.lg <- function(model, path, string = ".WITH$"){
 
-  output <- readModels(target = file.path(path, model))$parameters
+  output <- MplusAutomation::readModels(target = file.path(path, model))$parameters
 
   if(is.null(output$stdyx.standardized) == T){
     x <- output$stdy.standardized
@@ -31,8 +31,8 @@ get.cor.lg <- function(model, path, string = ".WITH$"){
   index1 <- data.frame(paramHeader = rownames(df), index1 = 1:rc_n)
   index2 <- data.frame(param = rownames(df), index2 = 1:rc_n)
 
-  x <- left_join(x, index1, by = c("paramHeader"))
-  x <- left_join(x, index2, by = c("param"))
+  x <- dplyr::left_join(x, index1, by = c("paramHeader"))
+  x <- dplyr::left_join(x, index2, by = c("param"))
 
   for (i in 1:nrow(x)) {
 
