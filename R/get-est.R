@@ -1,4 +1,12 @@
-# get CFA model estimate (for plotting)
+#' Get CFA model estimates (for plotting)
+#'
+#' @param model Mplus model name
+#' @param path Mplus model file path
+#'
+#' @return A data.frame of wave tags and corresponding model estimates
+#' @note stdyx.standardized is used if available. Otherwise, stdy.standardized is used.
+#' @seealso `get.modparam`
+
 get.est <- function(model, path){
 
   output <- readModels(target = file.path(path,model))$parameters

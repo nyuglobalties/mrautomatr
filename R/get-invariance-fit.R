@@ -1,6 +1,12 @@
-# get measurement invariance model fits
-
-get.invariance <- function(inv_models, path){
+#' Get measurement invariance model fits
+#'
+#' @param inv_models A vector of Mplus measurement invariance model name, in the order of config, metric and scalar model names
+#' @param path Mplus model file path
+#'
+#' @return A data.frame of measurement invariance model fits
+#'
+#' @seealso `mplus.version.fit.long`
+get.invariance.fit <- function(inv_models, path){
 
   config = inv_models[1]
   if(is.na(config) == T){stop("Configural invariance model was not available, please add to the source folder.",call. = T)}
@@ -26,9 +32,9 @@ get.invariance <- function(inv_models, path){
   output_metric <- as_tibble(x2)
   output_scalar <- as_tibble(x3)
 
-  output_config <- check.mplus.version.invariance(output_config)
-  output_metric <- check.mplus.version.invariance(output_metric)
-  output_scalar <- check.mplus.version.invariance(output_scalar)
+  output_config <- mplus.version.fit.long(output_config)
+  output_metric <- mplus.version.fit.long(output_metric)
+  output_scalar <- mplus.version.fit.long(output_scalar)
 
   output <- bind_rows(output_config, output_metric, output_scalar)
   output <- select(output, -c(CFI:Filename), CFI:Filename)

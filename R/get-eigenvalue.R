@@ -1,4 +1,9 @@
-# get eigenvalue
+#' Get eigenvalue for screeplots from EFA models
+#'
+#' @param model Mplus model name
+#' @param path Mplus model file path
+#'
+#' @return A data.frame of wave tags and eigenvalues for factor n
 get.eigenvalue <- function(model, path){
 
   # read .out as texts

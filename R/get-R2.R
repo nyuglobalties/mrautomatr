@@ -1,4 +1,9 @@
-# get CFA R-squared
+#' Get CFA model R-squared
+#'
+#' @param model Mplus model name
+#' @param path Mplus model file path
+#'
+#' @return A data.frame of wave tags, corresponding R2 estimates, SEs, p values and residual variances
 get.R2 <- function(model, path){
 
   output <- readModels(target = file.path(path,model))$parameters$r2

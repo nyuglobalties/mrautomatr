@@ -1,5 +1,15 @@
-# get correlation matrix from longitudinal invariance model
-get.cor.lg <- function(model, path, string){
+#' Get correlation matrices from longitudinal invariance models
+#'
+#' @param model Mplus model name
+#' @param path Mplus file path
+#' @param string
+#' Default is set to `".WITH$"` to identify rows ending with `WITH` in paramHeader.
+#' No need to further specify `string = ".WITH$"` if used alone.
+#'
+#' @return A data.frame of the correlation matrix.
+#'
+#' @seealso `get.cor.bivar`
+get.cor.lg <- function(model, path, string = ".WITH$"){
 
   output <- readModels(target = file.path(path, model))$parameters
 

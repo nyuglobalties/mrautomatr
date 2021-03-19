@@ -15,7 +15,7 @@ get.omega.lg(model, path)
 A data.frame with two variables: \code{subscale_wave} and \code{omega_lg}
 }
 \description{
-\code{get.omega.lg} creates McDonald's omega from an Mplus CFA model on a given wave data.
+\code{get.omega.lg} creates McDonald's omega from an Mplus longitudinal invariance model.
 \code{calc.omega()} is called to calculate omegas. \code{loadings} come from factor loadings in stdyx.standardized,
 and \code{resid} comes from resid_var.
 }

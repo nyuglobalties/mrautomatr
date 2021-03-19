@@ -1,4 +1,11 @@
-# get bivariate correlation matrix from factor scores
+#' Get bivariate correlation matrices from factor scores
+#'
+#' @param fs_data A data.frame of the factor score data saved from Mplus OR raw data
+#'
+#' @return A data.frame of the correlation matrix.
+#'
+#' @seealso `get.cor.lg`
+#' @note Factor score data from Mplus do not have variable headers. You may need to manually add them before importing the data to R.
 get.cor.bivar <- function(fs_data){
   x <- as.matrix(fs_data)
   R <- Hmisc::rcorr(x)$r
