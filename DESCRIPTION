@@ -33,3 +33,6 @@ Imports:
     withr,
     rmarkdown,
     haven
+Suggests: 
+    knitr
+VignetteBuilder: knitr

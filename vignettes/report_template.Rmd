@@ -32,9 +32,17 @@ output:
     mapstyles:
       Normal: ['First Paragraph']
     reference_docx: "Template/MR_word_template.docx"
+vignette: >
+  %\VignetteIndexEntry{report_template}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include = F}
+# knitr::opts_chunk$set(
+#  collapse = TRUE,
+#  comment = "#>"
+#)
 
 # knitr global settings
 knitr::opts_chunk$set(
@@ -69,6 +77,8 @@ fp <- fp_par(
 
 ft <- fp_text(shading.color='#EFEFEF', 
               bold = TRUE)
+
+library(mrautomatr)
 ```
 
 ```{r user input}
