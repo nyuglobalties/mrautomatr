@@ -7,7 +7,7 @@
 #' No need to further specify `string = ".WITH$"` if used alone.
 #'
 #' @return A data.frame of the correlation matrix.
-#'
+#' @export
 #' @seealso `get.cor.bivar`
 get.cor.lg <- function(model, path, string = ".WITH$"){
 

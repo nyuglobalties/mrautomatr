@@ -9,7 +9,7 @@
 #' @param path Mplus model file path
 #'
 #' @return A data.frame with two variables: `subscale_wave` and `omega_lg`
-#'
+#' @export
 #' @note Mac users can hit `command + option + c` in finder to quickly get the local file path.
 #' @importFrom magrittr %>%
 

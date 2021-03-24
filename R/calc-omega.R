@@ -9,7 +9,7 @@
 #' @param resid Residuals from a CFA model
 #'
 #' @return A single omega value
-#'
+#' @export
 #' @seealso `get.omega.bywave()` and `get.omega.lg()`
 #'
 #' @note Revelle, W., & Zinbarg, R. E. (2008). Coefficients Alpha, Beta, Omega, and the glb: Comments on Sijtsma. Psychometrika, 74(1), 145. https://doi.org/10.1007/s11336-008-9102-z

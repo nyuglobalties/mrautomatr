@@ -3,7 +3,7 @@
 #' @param fs_data A data.frame of the factor score data saved from Mplus OR raw data
 #'
 #' @return A data.frame of the correlation matrix.
-#'
+#' @export
 #' @seealso `get.cor.lg`
 #' @note Factor score data from Mplus do not have variable headers. You may need to manually add them before importing the data to R.
 get.cor.bivar <- function(fs_data){

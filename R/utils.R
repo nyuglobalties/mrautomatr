@@ -45,3 +45,7 @@ sup.cat <- function(code){
                           {code}
   )
 }
+
+mrautomatr_path <- function(...) {
+  system.file(..., package = "mrautomatr")
+}

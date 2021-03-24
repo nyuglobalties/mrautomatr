@@ -4,6 +4,7 @@
 #' @param path Mplus model file path
 #'
 #' @return A data.frame of wave tags, corresponding model estimates and SEs
+#' @export
 #' @note stdyx.standardized is used if available. Otherwise, stdy.standardized is used.
 #' @seealso `get.est`
 #' @importFrom magrittr %>%

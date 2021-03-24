@@ -4,7 +4,7 @@
 #' @param path Mplus model file path
 #'
 #' @return A data.frame of CFA model fits
-#'
+#' @export
 #' @seealso `mplus.version.fit.short`
 get.cfa.fit <- function(model, path){
 

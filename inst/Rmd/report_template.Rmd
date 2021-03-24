@@ -8,7 +8,7 @@ params:
   storecache: no
   set_title: "Measurement Report"
   set_author: "Michael Wu"
-  template: "templates/input_template.xlsx"
+  template: "`r mrautomatr_path('templates/input_template.xlsx')`"
   item: TRUE
   descriptive: TRUE
   ds_plot: TRUE
@@ -31,10 +31,14 @@ output:
   officedown::rdocx_document:
     mapstyles:
       Normal: ['First Paragraph']
-    reference_docx: "Template/MR_word_template.docx"
+    reference_docx: "`r mrautomatr_path('templates/MR_word_template.docx')`"
 ---
 
 ```{r setup, include = F}
+# knitr::opts_chunk$set(
+#  collapse = TRUE,
+#  comment = "#>"
+#)
 
 # knitr global settings
 knitr::opts_chunk$set(
@@ -69,6 +73,8 @@ fp <- fp_par(
 
 ft <- fp_text(shading.color='#EFEFEF', 
               bold = TRUE)
+
+library(mrautomatr)
 ```
 
 ```{r user input}

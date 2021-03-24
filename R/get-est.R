@@ -4,9 +4,11 @@
 #' @param path Mplus model file path
 #'
 #' @return A data.frame of wave tags and corresponding model estimates
+#' @export
 #' @note stdyx.standardized is used if available. Otherwise, stdy.standardized is used.
 #' @seealso `get.modparam`
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 
 get.est <- function(model, path){
 
@@ -28,7 +30,7 @@ get.est <- function(model, path){
                 sep = "")
 
   output <- output %>%
-    dplyr::filter(grepl(".BY$", paramHeader)) %>%
+    dplyr::filter(grepl(".BY$", .data$paramHeader)) %>%
     dplyr::select(est) %>%
     dplyr::mutate(est = paste(wave, est, "\n", sep = ""))
 

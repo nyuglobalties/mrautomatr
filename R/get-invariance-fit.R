@@ -4,7 +4,7 @@
 #' @param path Mplus model file path
 #'
 #' @return A data.frame of measurement invariance model fits
-#'
+#' @export
 #' @seealso `mplus.version.fit.long`
 get.invariance.fit <- function(inv_models, path){
 

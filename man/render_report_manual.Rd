@@ -7,14 +7,23 @@
 render_report_manual(output_file, output_dir)
 }
 \arguments{
-\item{output_file}{The name of the output file.}
+\item{output_file}{A string of the name of the output file.}
 
-\item{output_dir}{The output directory for the rendered \code{output_file}.}
+\item{output_dir}{A string of the output directory for the rendered \code{output_file}.}
 }
 \value{
 A docx document.
 }
 \description{
 This function opens a Shiny app that allows you to type in global information about the measurement report
-and click/unclick sections that you don't want in the report.
+and click/unclick sections that you don't want in the report (see README.md for descriptions about each section).
+}
+\examples{
+\dontrun{
+render_report_manual(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
+                     output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test"
+                    }
+}
+\seealso{
+\code{render_report}, \code{render_report_multiple}
 }

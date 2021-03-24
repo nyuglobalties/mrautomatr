@@ -2,7 +2,7 @@
 #'
 #' @param model Mplus model name
 #' @param path Mplus model file path
-#'
+#' @export
 #' @return A data.frame of wave tags, corresponding R2 estimates, SEs, p values and residual variances
 #' @importFrom magrittr %>%
 get.R2 <- function(model, path){

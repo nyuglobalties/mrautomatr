@@ -32,7 +32,8 @@ Imports:
     xfun,
     withr,
     rmarkdown,
-    haven
+    haven,
+    rlang
 Suggests: 
     knitr
 VignetteBuilder: knitr

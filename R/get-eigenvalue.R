@@ -2,7 +2,7 @@
 #'
 #' @param model Mplus model name
 #' @param path Mplus model file path
-#'
+#' @export
 #' @return A data.frame of wave tags and eigenvalues for factor n
 get.eigenvalue <- function(model, path){
 

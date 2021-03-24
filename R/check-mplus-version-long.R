@@ -10,6 +10,7 @@
 #' "ChiSqBaseline_Value","ChiSqBaseline_DF","ChiSqBaseline_PValue"
 #' "ChiSqDiffTest_Value","ChiSqDiffTest_DF","ChiSqDiffTest_PValue",
 #' "SRMR", "CFI", "TLI", "RMSEA_Estimate", "SRMR"/"WRMR", "Filename"
+#' @export
 #'
 #' @seealso `mplus.version.fit.short`
 #' @note This function selects ChiSqBaseline_Value and ChiSqDiffTest_Value and their corresponding df and p value,

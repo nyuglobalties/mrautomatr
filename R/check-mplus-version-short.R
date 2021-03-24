@@ -6,7 +6,7 @@
 #' @param df A data.frame from readModels
 #'
 #' @return A data.frame of CFA model fits: "k", "ChiSq", "df", "p", "CFI", "TLI", "RMSEA", "SRMR"/"WRMR", "Filename"
-#'
+#' @export
 #' @seealso `mplus.version.fit.long`
 #' @examples
 #' \dontrun{
