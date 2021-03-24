@@ -11,11 +11,12 @@
 #' @seealso `render_report`, `render_report_multiple`
 #' @examples
 #' \dontrun{
-#' render_report_manual(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
-#'                      output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test"
+#' render_report_manual(output_file = "Report_lebanon_cs.docx",
+#'                      output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
 #'                     }
 render_report_manual <- function(output_file, output_dir){
-  rmarkdown::render(mrautomatr_path('Rmd/report_template.Rmd'), params = "ask",
+  rmarkdown::render(system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
+                    params = "ask",
                     output_file = output_file,
                     output_dir = output_dir)
 }

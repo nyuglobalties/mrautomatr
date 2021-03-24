@@ -20,8 +20,8 @@ and click/unclick sections that you don't want in the report (see README.md for 
 }
 \examples{
 \dontrun{
-render_report_manual(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
-                     output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test"
+render_report_manual(output_file = "Report_lebanon_cs.docx",
+                     output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
                     }
 }
 \seealso{

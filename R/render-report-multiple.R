@@ -12,7 +12,7 @@
 #' render_report_multiple(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
 #'                        templates = c("input_template_lebanon_cs.xlsx",
 #'                                      "input_template_niger_psra.xlsx"),
-#'                        output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test"
+#'                        output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
 #'                       }
 render_report_multiple <- function(input_dir,
                                    templates = list.files(input_dir, pattern = "^[a-zA-Z].*\\.xlsx$"),
@@ -31,18 +31,33 @@ render_report_multiple <- function(input_dir,
 # rendering the Rmd document in a new R session so that objects in the current R session will not pollute the Rmd document
 
   for (i in 1:length(templates)) {
-
-    xfun::Rscript_call(
-      rmarkdown::render,
-      list(input =  mrautomatr_path('Rmd/report_template.Rmd'),
-           params = list(
-             template = templates[i],
-             set_title = title[i]
-           ),
-           output_file = paste0("Report_", index[i], ".docx"),
-           output_dir = output_dir
-      )
-    )
-
+   rmarkdown::render(input = system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
+                     params = list(
+                       template = file.path(input_dir, templates[i]),
+                       set_title = title[i]
+                     ),
+                     output_file = paste0("Report_", index[i], ".docx"),
+                     output_dir = output_dir,
+                     envir = new.env())
   }
 }
+# rmarkdown::render(input = system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
+#                   params = list(
+#                     template = file.path(input_dir, templates[i]),
+#                     set_title = title[i]
+#                   ),
+#                   output_file = paste0("Report_", index[i], ".docx"),
+#                   output_dir = output_dir)
+
+
+# xfun::Rscript_call(
+#   rmarkdown::render,
+#   list(input = system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
+#        params = list(
+#          template = file.path(input_dir, templates[i]),
+#          set_title = title[i]
+#        ),
+#        output_file = paste0("Report_", index[i], ".docx"),
+#        output_dir = output_dir
+#   )
+# )

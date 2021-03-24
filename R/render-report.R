@@ -19,12 +19,12 @@
 #' @seealso `render_report`, `render_report_manual`
 render_report = function(input_dir, template, index, title, output_dir) {
   rmarkdown::render(
-    mrautomatr_path('Rmd/report_template.Rmd'), params = list(
+    system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
+    params = list(
       template = file.path(input_dir, template),
-      set_title = title,
-      output_dir = output_dir
+      set_title = title
     ),
-    envir = globalenv(),
+    output_dir = output_dir,
     output_file = paste0("Report_", index, ".docx")
   )
 }

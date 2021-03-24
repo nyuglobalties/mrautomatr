@@ -28,7 +28,7 @@ Render multiple measurement reports at once
 render_report_multiple(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
                        templates = c("input_template_lebanon_cs.xlsx",
                                      "input_template_niger_psra.xlsx"),
-                       output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test"
+                       output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
                       }
 }
 \seealso{

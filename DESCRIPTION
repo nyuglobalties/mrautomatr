@@ -29,11 +29,12 @@ Imports:
     Hmisc,
     stringr,
     openxlsx,
-    xfun,
     withr,
     rmarkdown,
     haven,
-    rlang
+    rlang,
+    BBmisc,
+    tidyr
 Suggests: 
     knitr
 VignetteBuilder: knitr
