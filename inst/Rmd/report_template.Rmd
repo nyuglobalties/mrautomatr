@@ -1,0 +1,769 @@
+---
+title: "`r params$set_title`"
+author: "`r params$set_author`"
+date: "`r Sys.Date()`"
+params:
+  printcode: no
+  printwarning: no
+  storecache: no
+  set_title: "Measurement Report"
+  set_author: "Michael Wu"
+  template: !expr system.file("templates", "input_template.xlsx", package = "mrautomatr")
+  item: TRUE
+  descriptive: TRUE
+  ds_plot: TRUE
+  correlation_matrix_lg: TRUE
+  correlation_matrix_bivar: TRUE
+  correlation_matrix_item: FALSE # this might crash the document, so the default is False
+  efa_screeplot: TRUE
+  cfa_model_fit: TRUE
+  cfa_model_plot: TRUE
+  cfa_model_parameters: TRUE
+  cfa_r2: TRUE
+  internal_reliability: TRUE
+  summary_item_statistics: TRUE
+  item_total_statistics: TRUE
+  inv_tx: TRUE
+  inv_gender: TRUE
+  inv_age: TRUE
+  inv_lg: TRUE
+output: 
+  officedown::rdocx_document:
+    mapstyles:
+      Normal: ['First Paragraph']
+    reference_docx: !expr system.file("templates", "MR_word_template.docx", package = "mrautomatr")
+---
+
+```{r setup, include = F}
+# knitr global settings
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  fig.cap = TRUE,
+  echo = params$printcode, 
+  warning = params$printwarning, 
+  cache = params$storecache,
+  message = F,
+  error = T,
+  results="asis",
+  tab.cap.style = "Table Caption",
+  tab.cap.pre = "Table ",
+  tab.cap.sep = ": ",
+  fig.cap.style = "Image Caption",
+  fig.cap.pre = "Figure ",
+  fig.cap.sep = ": ")
+
+options(yaml.eval.expr = TRUE)
+# packages
+# library(officedown)
+# library(officer)
+# library(tidyverse)
+# library(psych)
+# library(MplusAutomation)
+# library(semPlot)
+# library(flextable)
+# library(mrautomatr)
+```
+
+```{r user input}
+# predefined excel sheets
+user_path <- openxlsx::read.xlsx(params$template, sheet = 1)
+user_subscale <- openxlsx::read.xlsx(params$template, sheet = 2)
+user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
+user_description <- openxlsx::read.xlsx(params$template, sheet = 4)
+
+# load paths
+year <- user_path$year
+measure <- user_path$measure
+data_file_path <- user_path$data_file_path
+fs_data_file_path <- user_path$fs_data_file_path
+model_file_path <- user_path$model_file_path
+
+# specify items for each subscale, without wave subscript (ordered by wave)
+subscale_data <- BBmisc::convertColsToList(user_subscale)
+
+  # a vector of all items for the current construct 
+subset_data <- as.character(
+  unlist(
+    lapply(subscale_data, 
+           function(x) x[!is.na(x)])
+    )
+  )
+
+# a vector of EFA models (ordered by wave)
+model_efa <- na.omit(user_model$model_efa)
+
+# a vector of CFA models (ordered by wave)
+model_cfa <- na.omit(user_model$model_cfa)
+
+# a list of treatment invariance models (config, metric and scalar; ordered by wave)
+model_inv_tx <- split.list(na.omit(user_model$model_inv_tx), 3)
+  
+# a list of gender invariance models (config, metric and scalar; ordered by wave)
+model_inv_gender <- split.list(na.omit(user_model$model_inv_gender), 3)
+
+# a list of age invariance models (config, metric and scalar; ordered by wave)
+model_inv_age <- split.list(na.omit(user_model$model_inv_age), 3)
+
+# the longitudinal invariance model
+model_inv_lg <- split.list(na.omit(user_model$model_inv_lg), 1)
+```
+
+```{r data preparation}
+# read in data (currently accepting dta, xlsx and csv)
+dat <- read.any(data_file_path)
+
+# subset of only items for the current construct
+dat_s <- as.data.frame(
+  dplyr::select(dat, 
+                dplyr::all_of(subset_data)))
+
+# subscale and its corresponding item names
+subscale_item_name <- as.data.frame(subscale_data) %>%
+  tidyr::gather(key = "subscale", 
+                value = "item") %>%
+  dplyr::mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale),
+                wave = paste("T", wave, sep = ""),
+                subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale)) %>%
+  dplyr::select(subscale, wave, item) %>% 
+  tidyr::drop_na()
+
+# read in factor score data (only for calculating bivariate correlation)
+if(is.null(read.any(fs_data_file_path)) == T){
+    stop("Factor score data file path is not specified, please double check. Also, please make sure that the factor score dataset has the subscale names as variable names, the same as the ones specified in user_subscale.",call. = F)} else{
+    dat_fs <- read.any(fs_data_file_path) %>%
+                dplyr::select(names(user_subscale))
+    }
+```
+
+\newpage
+
+## Table of content
+
+<!---BLOCK_TOC--->
+
+## List of figures
+
+<!---BLOCK_TOC{seq_id: 'fig'}--->
+
+## List of tables
+
+<!---BLOCK_TOC{seq_id: 'tab'}--->
+
+
+\newpage
+
+
+## Data and Sample
+
+This report presents descriptive and psychometric information for `r measure` in `r year`.
+
+Table \@ref(tab:item) presents the descriptions of the items used in `r measure`.
+
+```{r item, tab.cap="Item description", tab.id = "item", eval = params$item}
+# remove the auto-created dots when reading in excel sheets
+names(user_description) <- gsub("\\.", " ", names(user_description))
+
+flextable::flextable(user_description) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>% 
+  flextable::line_spacing(space = 1) %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+## Method
+
+...
+
+\newpage
+
+## Results
+
+### Descriptive Statistics
+
+```{r descriptive, tab.cap="Descriptive statistics", tab.id = "descriptive", eval = params$descriptive}
+ds <- skimr::skim(dat_s) %>% 
+  dplyr::mutate_if(is.numeric, round, 3) %>%
+  dplyr::rename_with( ~ gsub("^(numeric.)(.*)$", "\\2", .x),
+                      dplyr::starts_with("numeric.")) %>%
+  dplyr::select(-skim_type, -hist) %>%
+  dplyr::rename(variable = skim_variable)
+  
+flextable::flextable(ds) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>% 
+  flextable::bold(part = "header") %>%
+  flextable::italic(j = 6:10, part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::line_spacing(space = 1) %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+```{r ds_plot, fig.cap = "Item distribution",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300, eval = params$ds_plot}
+
+# descriptive plots
+
+par(mfrow = c(6,6),
+    mar = c(4,1,1,1))
+
+chunk_num <- ncol(dat_s) %/% 24
+
+while (chunk_num >= 1) {
+  for (i in 1:24) {
+    index <- 24*(chunk_num - 1) + i
+
+    hist(dat_s[, index], main = "", xlab = names(dat_s)[index], col = "white")
+  }
+
+  chunk_num <- chunk_num - 1
+}
+```
+
+\newpage
+
+
+<!---BLOCK_LANDSCAPE_START--->
+```{r correlation_matrix_lg, tab.cap = "Factor correlations from the longitudinal invariance models", tab.id = "correlation_matrix_lg", eval = params$correlation_matrix_lg}
+# Factor correlation matrix from longitudinal models
+
+df_cor_lg <- sup.cat(
+  get.cor.lg(model = model_inv_lg[3], # the third one is always the scalar model
+             path = model_file_path,
+             string = ".WITH$"))
+
+df_cor_lg <- df_cor_lg %>%
+             tibble::rownames_to_column("variable") %>%
+             dplyr::rename(" " = variable)
+
+flextable::flextable(df_cor_lg) %>%
+  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+                  colwidths =  ncol(df_cor_lg)) %>%
+  flextable::align(part = "all") %>% 
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::bold(j = " ", part = "body") %>%
+  flextable::fontsize(size = 10, part = "all") %>% 
+  flextable::italic(part = "footer") %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+\newpage
+
+```{r correlation_matrix_bivar, tab.cap = "Bivariate correlations among factors", tab.id = "correlation_matrix_bivar", eval = params$correlation_matrix_bivar}
+# Bivariate correlation matrix
+
+df_cor_bivar <- get.cor.bivar(dat_fs)
+
+df_cor_bivar <- df_cor_bivar %>%
+            tibble::rownames_to_column("variable") %>%
+            dplyr::rename(" " = variable)
+
+flextable::flextable(df_cor_bivar) %>%
+  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+                  colwidths =  ncol(df_cor_bivar)) %>%
+  flextable::align(part = "all") %>% 
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::bold(j = " ", part = "body") %>%
+  flextable::fontsize(size = 10, part = "all") %>% 
+  flextable::italic(part = "footer") %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r correlation_matrix_item, tab.cap = "Bivariate correlations among all items", tab.id = "correlation_matrix_item", eval = params$correlation_matrix_item}
+# Bivariate correlation matrix among all items
+# Warning!: this could be really long and takes some time to run, so the default is not to evaluate this chunk unless otherwise specified.
+
+df_cor_item <- get.cor.bivar(dat_s)
+
+df_cor_item <- df_cor_item %>%
+            tibble::rownames_to_column("variable") %>%
+            dplyr::rename(" " = variable)
+
+flextable::flextable(df_cor_item) %>%
+  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.",
+                  colwidths =  ncol(df_cor_item)) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::bold(j = " ", part = "body") %>%
+  flextable::fontsize(size = 10, part = "all") %>%
+  flextable::italic(part = "footer") %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+### Factor Analysis
+
+#### EFA and CFA
+```{r efa_screeplot, fig.cap = "EFA model screeplots at all waves", fig.id = "efa_screeplot", fig.height = 4, fig.width = 9, dpi = 300, eval = params$efa_screeplot}
+
+df_efa <- sup.cat(
+  purrr::map_dfr(
+    lapply(model_efa, 
+           get.eigenvalue, 
+           path = model_file_path),
+    dplyr::bind_rows))
+
+ggplot2::ggplot(df_efa, ggplot2::aes(x = nfactor, y = ev)) +
+  ggplot2::geom_point() +
+  ggplot2::geom_line() +
+  ggplot2::scale_x_continuous(breaks = seq(0, max(df_efa$nfactor), by = 2)) +
+  ggplot2::facet_wrap(~ wave) +
+  ggplot2::labs(x = "\nComponent Number", y = "Eigenvalue\n") + 
+  ggplot2::theme_classic()
+```
+\newpage
+
+```{r cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit", eval = params$cfa_model_fit}
+
+df_cfa <- sup.cat(
+  purrr::map_dfr(
+    lapply(model_cfa, 
+           get.cfa.fit, 
+           path = model_file_path),
+    dplyr::bind_rows))
+
+flextable::flextable(df_cfa) %>%
+    flextable::compose(
+    part = "header", j = "ChiSq",
+    value = flextable::as_paragraph("\U03C7", flextable::as_sup("2"))
+    ) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::italic(j = 4, part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+```{r cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300, eval = params$cfa_model_plot}
+
+if(length(unique(sapply(sup.cat(lapply(model_cfa, get.est, path = model_file_path)), nrow))) > 1){
+  stop("The factor structure has to be the same across waves in order to draw the graph. Please check all CFA models.", call. = F)
+}
+
+plot_label <- sup.cat(
+  purrr::map_dfc(
+    lapply(model_cfa, 
+           get.est, 
+           path = model_file_path), 
+    dplyr::bind_cols)) %>%
+  tidyr::unite("label", tidyr::everything(), sep = "")
+
+model_cfa_str <- sup.cat(
+  MplusAutomation::readModels(
+    file.path(model_file_path, 
+              model_cfa[[1]]))
+  )
+
+par(mfrow = c(1,1))
+semPlot::semPaths(model_cfa_str, style="lisrel", layout = "tree",
+         nCharNodes = 5, sizeMan = 4, sizeMan2 = 4, sizeLat = 8, 
+         thresholds = F, residuals = F, intercepts = F, edge.color = "gray40", 
+         edgeLabels = plot_label$label, edge.label.cex = 0.3,
+         edge.label.position = 0.8, label.cex = 1, mar=c(1,1,3,1))
+```
+
+\newpage
+
+```{r cfa_model_parameters, tab.cap = "CFA model parameters at all waves", tab.id = "cfa_model_parameters", eval = params$cfa_model_parameters}
+df_cfa_modparam <- sup.cat(
+  lapply(model_cfa, 
+         get.modparam, 
+         path = model_file_path) %>% 
+  purrr::reduce(dplyr::left_join, 
+                by = c("paramHeader", "param")))
+
+flextable::flextable(df_cfa_modparam) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r cfa_r2, tab.cap = "CFA model R-squared at all waves", tab.id = "cfa_r2", eval = params$cfa_r2}
+
+df_cfa_r2 <- sup.cat(
+  lapply(model_cfa, 
+         get.R2, 
+         path = model_file_path)) %>% 
+  purrr::reduce(dplyr::left_join, 
+                by = c("param"))
+
+flextable::flextable(df_cfa_r2) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+#### Internal Reliability and Correlations
+
+```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability", eval = params$internal_reliability}
+
+# (example: https://rpubs.com/hauselin/reliabilityanalysis)
+
+alpha_drop = list()
+
+for(i in 1:length(subscale_data)){
+  
+ alpha_drop[[i]] <- psych::alpha(
+   dplyr::select(dat_s, 
+          na.omit(
+            dplyr::all_of(subscale_data[[i]])
+            )
+          )
+   )$alpha.drop
+  
+}
+
+alpha_drop <- purrr::map_dfr(alpha_drop, dplyr::bind_rows) %>% 
+            round(digits = 3) %>%
+            tibble::rownames_to_column("item") %>%
+  dplyr::left_join(subscale_item_name, by = "item") %>%
+  dplyr::select(subscale, wave, tidyr::everything())
+
+alpha_drop <- flextable::as_grouped_data(alpha_drop, 
+                                         groups = c( "wave","subscale"))
+
+
+flextable::as_flextable(alpha_drop) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>% 
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics", eval = params$summary_item_statistics}
+
+item_stats = list()
+
+for(i in 1:length(subscale_data)){
+  
+ item_stats[[i]] <- psych::alpha(
+   dplyr::select(dat_s, 
+          na.omit(
+            dplyr::all_of(subscale_data[[i]])
+            )
+          )
+   )$item.stats
+  
+}
+
+item_stats <- purrr::map_dfr(item_stats, dplyr::bind_rows) %>% 
+            round(digits = 3) %>%
+            tibble::rownames_to_column("item") %>%
+  dplyr::left_join(subscale_item_name, by = "item") %>%
+  dplyr::select(subscale, tidyr::everything())
+
+item_stats <- flextable::as_grouped_data(item_stats, 
+                                         groups = c( "wave","subscale"))
+
+flextable::as_flextable(item_stats) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r item_total_statistics, tab.cap = "Item total statistics", tab.id = "item_total_statistics", eval = params$item_total_statistics}
+
+total_stats = list()
+
+for(i in 1:length(subscale_data)){
+  
+ total_stats[[i]] <- psych::alpha(
+   dplyr::select(dat_s, 
+          na.omit(
+            dplyr::all_of(subscale_data[[i]])
+            )
+          )
+   )$total
+  
+}
+
+# a list of omega by wave
+omega_by_wave_ls <- sup.cat(
+  lapply(model_cfa, 
+         get.omega.bywave, 
+         path = model_file_path))
+
+# add wave tag to subscale
+for (i in 1:length(omega_by_wave_ls)) {
+  omega_by_wave_ls[[i]]$subscale_wave <- paste(omega_by_wave_ls[[i]]$subscale_wave,
+                                          i,
+                                          sep = "_")
+}
+
+
+total_stats <- purrr::map_dfr(total_stats, dplyr::bind_rows) %>% 
+            round(digits = 3) %>%
+            dplyr::mutate(subscale_wave = unique(
+              paste(subscale_item_name$subscale,
+                    gsub("^(T)(\\d+)$","\\2", subscale_item_name$wave),
+                    sep = "_"))
+            ) %>%
+  {if (is.empty(unlist(model_inv_lg)) == F) 
+    dplyr::left_join(.,sup.cat(get.omega.lg(model = model_inv_lg[3],
+                                            path = model_file_path)), 
+            by = "subscale_wave") else .} %>% 
+  dplyr::left_join(purrr::map_dfr(omega_by_wave_ls, 
+                                  dplyr::bind_rows),
+                   by = "subscale_wave") %>% # merge in omega squared 
+  dplyr::mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale_wave),
+                wave = paste("T", wave, sep = ""),
+                subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale_wave)) %>%
+  dplyr::select(subscale, wave, tidyr::everything(), -subscale_wave)
+
+if(sum(is.na(total_stats$omega_lg)) > 0){
+  stop("Subscales or subscale names are different in CFA and in the longitudinal invariance model. Please double check.")
+}
+
+if(sum(is.na(total_stats$omega_by_wave)) > 0){
+  stop("Subscales or subscale names are different in CFA and in the input file template. Please double check.")
+}
+
+total_stats <- flextable::as_grouped_data(total_stats, 
+                                          groups = c( "wave"))
+
+flextable::as_flextable(total_stats) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>% 
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+
+\newpage
+
+
+#### Measurement Invariance
+
+```{r inv_tx, tab.cap = "Treatment group invariance model fit", tab.id = "inv_tx", eval = params$inv_tx}
+
+df_inv_tx <- sup.cat(
+  purrr::map_dfr(
+    lapply(model_inv_tx, 
+           get.invariance.fit, 
+           path = model_file_path), 
+    dplyr::bind_rows)
+  )
+
+df_inv_tx <- df_inv_tx %>%
+  dplyr::mutate(wave = gsub("^([a-zA-Z]+)(\\d+)(.*)", "\\2", Filename), 
+                .before = "Parameters") %>%
+  dplyr::mutate(wave = paste("T", wave, sep = ""))
+
+df_inv_tx <- flextable::as_grouped_data(df_inv_tx, 
+                                        groups = c("wave"))
+
+
+flextable::as_flextable(df_inv_tx) %>% 
+  flextable::compose(
+    part = "header", j = "ChiSqM_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"), 
+                                    flextable::as_sub("B"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""),
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::italic(j = c(4,7,10), part = "header") %>%
+  flextable::set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  flextable::set_table_properties(layout = "autofit")
+
+```
+\newpage
+```{r inv_gender, tab.cap = "Gender invariance model fit", tab.id = "inv_gender", eval = params$inv_gender}
+
+df_inv_gender <- sup.cat(
+  purrr::map_dfr(
+    lapply(model_inv_gender, 
+           get.invariance.fit, 
+           path = model_file_path),
+    dplyr::bind_rows))
+
+df_inv_gender <- df_inv_gender %>%
+  dplyr::mutate(wave = gsub("^([a-zA-Z]+)(\\d+)(.*)", "\\2", Filename), 
+                .before = "Parameters") %>%
+  dplyr::mutate(wave = paste("T", wave, sep = ""))
+
+df_inv_gender <- flextable::as_grouped_data(df_inv_gender, 
+                                            groups = c("wave"))
+
+flextable::as_flextable(df_inv_gender) %>% 
+  flextable::compose(
+    part = "header", j = "ChiSqM_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"), 
+                                    flextable::as_sub("B"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""), 
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::italic(j = c(4,7,10), part = "header") %>%
+  flextable::set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  flextable::set_table_properties(layout = "autofit")
+
+```
+\newpage
+```{r inv_age, tab.cap = "Age invariance model fit", tab.id = "inv_age", eval = params$inv_age}
+
+df_inv_age <- sup.cat(
+  purrr::map_dfr(
+    lapply(model_inv_age, 
+           get.invariance.fit, 
+           path = model_file_path), 
+    dplyr::bind_rows))
+
+df_inv_age <- df_inv_age %>%
+  dplyr::mutate(wave = gsub("^([a-zA-Z]+)(\\d+)(.*)", "\\2", Filename), 
+                .before = "Parameters") %>%
+  dplyr::mutate(wave = paste("T", wave, sep = ""))
+
+df_inv_age <- flextable::as_grouped_data(df_inv_age, 
+                                         groups = c("wave"))
+
+flextable::as_flextable(df_inv_age) %>% 
+  flextable::compose(
+    part = "header", j = "ChiSqM_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"), 
+                                    flextable::as_sub("B"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""), 
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::italic(j = c(4,7,10), part = "header") %>%
+  flextable::set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+\newpage
+```{r inv_lg, tab.cap = "Longitudinal invariance model fit", tab.id = "inv_lg", eval = params$inv_lg}
+
+df_inv_lg <- sup.cat(
+  get.invariance.fit(
+    model_inv_lg, 
+    path = model_file_path)
+  )
+
+flextable::flextable(df_inv_lg) %>% 
+  flextable::compose(
+    part = "header", j = "ChiSqM_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqBaseline_Value",
+    value = flextable::as_paragraph("\U03C7",
+                                    flextable::as_sup("2"), 
+                                    flextable::as_sub("B"))
+    ) %>%
+  flextable::compose(
+    part = "header", j = "ChiSqDiffTest_Value",
+    value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""), 
+                                    flextable::as_sup("2"))
+    ) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::italic(j = c(4,7,10), part = "header") %>%
+  flextable::set_header_labels(
+    Parameters = "k",
+    ChiSqM_DF = "df",
+    ChiSqM_PValue = "p",
+    ChiSqBaseline_DF = "df",
+    ChiSqBaseline_PValue = "p",
+    ChiSqDiffTest_DF = "df",
+    ChiSqDiffTest_PValue = "p",
+    RMSEA_Estimate = "RMSEA"
+  )  %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+<!---BLOCK_LANDSCAPE_STOP--->
+
+
+## Reference
+
+Please use Zotero (or other reference managers) to add in-line citations and bibliography.
