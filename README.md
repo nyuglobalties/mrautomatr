@@ -21,8 +21,15 @@ You need to set up `R` and `Rstudio` on your computer before everything. `R` is 
 ### Step 1: Download the package
 
 -   Run the following lines:
--   `install.packages("devtools")`
--   `devtools::install_github("nyuglobalties/mrautomatr")`
+
+```
+    install.packages("devtools")
+    devtools::install_github("nyuglobalties/mrautomatr")
+```
+-   Check out the functions by running `?function_name`:
+```
+    ?mrautomatr
+```
 
 ### Step 2: Set the parameters
 
