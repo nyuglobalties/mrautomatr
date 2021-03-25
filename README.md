@@ -23,12 +23,25 @@ You need to set up `R` and `Rstudio` on your computer before everything. `R` is 
 -   Run the following lines:
 
 ```
-    install.packages("devtools")
-    devtools::install_github("nyuglobalties/mrautomatr")
+install.packages("usethis")
+install.packages("devtools")
+library(usethis)
+library(devtools)
 ```
--   Check out the functions by running `?function_name`:
+
+-   Set up your GitHub Personal Auth Token set following instructions on [this website](https://usethis.r-lib.org/reference/browse_github_pat.html). This is only applicable to this package right now since it's internal and private.
+
+-   Run the following line:
+
 ```
-    ?mrautomatr
+devtools::install_github("nyuglobalties/mrautomatr")
+library(mrautomatr)
+```
+
+-   Check out the functions by running `?function_name`, e.g.:
+
+```
+?mrautomatr
 ```
 
 ### Step 2: Set the parameters
