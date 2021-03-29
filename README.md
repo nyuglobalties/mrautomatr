@@ -57,7 +57,7 @@ Before you run any R codes, you need to make sure that the parameters for the re
     -   Age invariance models
     -   Gender invariance models
 
--   Second, fill in the excel sheet in the `Template` folder. Currently there are two test excel sheets that have the same template, which correspond to the two Word documents in the project folder. For your own purposes, please fill in your own parameters according to the template and delete the two excel sheets. We will update the project to an R package structure, which won't have you delete anything. Specifically, you need to set the following parameters. For any parameters that are not available temporarily, you can leave blank and still be able to generate the report (with errors in the Word document telling you that you need to specify more parameters to have a full report).
+-   Second, fill in the excel sheet in the `inst/templates/input_template.xlsx`, take it and store somewhere in your computer. Specifically, you need to set the following parameters. For any parameters that are not available temporarily, you can leave blank and still be able to generate the report (with errors in the Word document telling you that you need to specify more parameters to have a full report).
 
     -   **Tab 1:** `path` (A shorthand to get file path on Mac: go to the path/file and hit `command + option + C`)
 
