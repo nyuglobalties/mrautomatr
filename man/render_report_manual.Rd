@@ -4,12 +4,12 @@
 \alias{render_report_manual}
 \title{Render measurement report by manually specifying parameters}
 \usage{
-render_report_manual(output_file, output_dir)
+render_report_manual(index, output_dir)
 }
 \arguments{
-\item{output_file}{A string of the name of the output file.}
-
 \item{output_dir}{A string of the output directory for the rendered \code{output_file}.}
+
+\item{output_file}{A string of the name of the output file.}
 }
 \value{
 A docx document.
@@ -20,7 +20,7 @@ and click/unclick sections that you don't want in the report (see README.md for 
 }
 \examples{
 \dontrun{
-render_report_manual(output_file = "Report_lebanon_cs.docx",
+render_report_manual(index = "lebanon_cs",
                      output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
                     }
 }

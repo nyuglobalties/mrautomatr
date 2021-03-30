@@ -11,12 +11,12 @@
 #' @seealso `render_report`, `render_report_multiple`
 #' @examples
 #' \dontrun{
-#' render_report_manual(output_file = "Report_lebanon_cs.docx",
+#' render_report_manual(index = "lebanon_cs",
 #'                      output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
 #'                     }
-render_report_manual <- function(output_file, output_dir){
+render_report_manual <- function(index, output_dir){
   rmarkdown::render(system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
                     params = "ask",
-                    output_file = output_file,
+                    index = paste0("Report_", index, ".docx"),
                     output_dir = output_dir)
 }
