@@ -17,6 +17,6 @@
 render_report_manual <- function(index, output_dir){
   rmarkdown::render(system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
                     params = "ask",
-                    index = paste0("Report_", index, ".docx"),
+                    output_file = paste0("Report_", index, ".docx"),
                     output_dir = output_dir)
 }
