@@ -4,7 +4,7 @@
 \alias{render_report_manual}
 \title{Render measurement report by manually specifying parameters}
 \usage{
-render_report_manual(index, output_dir)
+render_report_manual(output_dir, output_file)
 }
 \arguments{
 \item{output_dir}{A string of the output directory for the rendered \code{output_file}.}
@@ -15,12 +15,12 @@ render_report_manual(index, output_dir)
 A docx document.
 }
 \description{
-This function opens a Shiny app that allows you to type in global information about the measurement report
+This function opens a Shiny app that allows you to manually type in global information about the measurement report
 and click/unclick sections that you don't want in the report (see README.md for descriptions about each section).
 }
 \examples{
 \dontrun{
-render_report_manual(index = "lebanon_cs",
+render_report_manual(output_file = "Report_lebanon_cs.docx",
                      output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
                     }
 }

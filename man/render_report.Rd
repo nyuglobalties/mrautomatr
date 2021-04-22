@@ -4,32 +4,56 @@
 \alias{render_report}
 \title{Render measurement report}
 \usage{
-render_report(input_dir, template, index, title, output_dir)
+render_report(output_dir, output_file, parameters = NULL)
 }
 \arguments{
-\item{input_dir}{A string of the input directory where the template file is located}
-
-\item{template}{A string of prespecified .xlsx template file name (see README.md)}
-
-\item{index}{A string of the report file name}
-
-\item{title}{A string of the report title}
-
 \item{output_dir}{A string of the output directory for the rendered output_file. This allows for a choice of an alternate directory to which the output file should be written (the default output directory of that of the input file). If a path is provided with a filename in output_file the directory specified here will take precedence. Please note that any directory path provided will create any necessary directories if they do not exist.}
+
+\item{output_file}{A string of the name of the output Word document}
+
+\item{parameters}{A list of the global parameters to be set in the YAML header of the Rmarkdown template (see README.md)}
 }
 \value{
-A docx document with the name "Report_index.docx"
+A docx document with the name specified by the user (e.g. "Report_xxx.docx".)
 }
 \description{
 Render measurement report
 }
 \examples{
 \dontrun{
-render_report(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
-              template = "input_template_lebanon_cs.xlsx",
-              index = "lebanon_cs",
-              title = "Lebanon Year 1 (2016-2017)",
-              output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
+render_report(output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
+              output_file = "Report_lebanon_cs.docx",
+              parameters = list(
+                       # set R code print options
+                       printcode = FALSE,
+                       printwarning = FALSE,
+                       storecache = FALSE,
+
+                       # set report overall parameters
+                       template = "/Users/michaelfive/Google Drive/NYU/3EA/test/input_template_lebanon_cs.xlsx",
+                       set_title = "Lebanon Year 1 (2016-2017)",
+                       set_author = "Jane Doe",
+
+                       # select report sections
+                       item = TRUE,
+                       descriptive = TRUE,
+                       ds_plot = TRUE,
+                       correlation_matrix_lg = TRUE,
+                       correlation_matrix_bivar = TRUE,
+                       correlation_matrix_item = FALSE, # BE CAREFUL! This might crash the document.
+                       efa_screeplot = TRUE,
+                       cfa_model_fit = TRUE,
+                       cfa_model_plot = TRUE,
+                       cfa_model_parameters = TRUE,
+                       cfa_r2 = TRUE,
+                       internal_reliability = TRUE,
+                       summary_item_statistics = TRUE,
+                       item_total_statistics = TRUE,
+                       inv_tx = TRUE,
+                       inv_gender = TRUE,
+                       inv_age = TRUE,
+                       inv_lg = TRUE
+                       ))
               }
 }
 \seealso{
