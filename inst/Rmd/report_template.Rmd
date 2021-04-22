@@ -74,10 +74,29 @@ user_description <- openxlsx::read.xlsx(params$template, sheet = 4)
 # load paths
 year <- user_path$year
 measure <- user_path$measure
-data_file_path <- user_path$data_file_path
-fs_data_file_path <- user_path$fs_data_file_path
-model_file_path <- user_path$model_file_path
 
+# need to evaluate box_path() if specified
+data_file_path <- 
+  if(grepl("^box_path", user_path$data_file_path) == T){
+    eval(parse(text = user_path$data_file_path))
+  } else {
+    user_path$data_file_path
+  }
+  
+fs_data_file_path <- 
+  if(grepl("^box_path", user_path$fs_data_file_path) == T){
+    eval(parse(text = user_path$fs_data_file_path))
+  } else {
+    user_path$fs_data_file_path
+  }
+  
+model_file_path <- 
+  if(grepl("^box_path", user_path$model_file_path) == T){
+    eval(parse(text = user_path$model_file_path))
+  } else {
+    user_path$model_file_path
+  }
+  
 # specify items for each subscale, without wave subscript (ordered by wave)
 subscale_data <- BBmisc::convertColsToList(user_subscale)
 

@@ -10,6 +10,7 @@
 #'   installed in a non-standard place. If `NULL`, this utility will
 #'   also check the "BOX_PATH" environmental variable to see if it's
 #'   defined. This method is useful for containerized code.
+#' @export
 #' @return An absolute, normalized path
 #' @examples
 #' if (FALSE) {

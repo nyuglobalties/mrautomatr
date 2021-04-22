@@ -22,7 +22,7 @@ render_report_multiple(
 }
 \value{
 Multiple docx documents, each with the title "Report_xxx.docx".
-The "xxx" corresponds to by any character between "input_template_" and ".xlsx" in specifying the \code{template}.
+The "xxx" corresponds to any character between "input_template_" and ".xlsx" as specified in \code{templates}.
 }
 \description{
 Render multiple measurement reports at once
