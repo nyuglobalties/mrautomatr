@@ -534,11 +534,11 @@ total_stats <- purrr::map_dfr(total_stats, dplyr::bind_rows) %>%
   dplyr::select(subscale, wave, tidyr::everything(), -subscale_wave)
 
 if(sum(is.na(total_stats$omega_lg)) > 0){
-  stop("Subscales or subscale names are different in CFA and in the longitudinal invariance model. Please double check.")
+  stop("Omega from longitudinal model is not showing up, potentially because: 1) the longitudinal model is not specified; or 2) subscale/item names are different in the excel sheet and in the longitudinal invariance model. Please double check and make sure to always add an underscore and a wave tag (_#) in the subscale section to both the construct name and the item names in your excel sheet and in your Mplus input file before you run the model. For Mplus models, you may need to rename your variables (i.e. add wave tags) before you run the models. If you only have one wave, simply use (_1) as a wave tag, and the number 1 will be picked up as the wave tag in the tables in this report.")
 }
 
 if(sum(is.na(total_stats$omega_by_wave)) > 0){
-  stop("Subscales or subscale names are different in CFA and in the input file template. Please double check.")
+  stop("Omega from CFA model by wave is not showing up, potentially because: 1) the CFA model is not specified; or 2) subscale/item names are different in the excel sheet and in the CFA models. Please double check and make sure to always add an underscore and a wave tag (_#) in the subscale section to both the construct name and the item names in your excel sheet and in your Mplus input file before you run the model. For Mplus models, you may need to rename your variables (i.e. add wave tags) before you run the models. If you only have one wave, simply use (_1) as a wave tag, and the number 1 will be picked up as the wave tag in the tables in this report.")
 }
 
 total_stats <- flextable::as_grouped_data(total_stats, 
