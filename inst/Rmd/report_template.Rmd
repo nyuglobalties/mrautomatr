@@ -447,6 +447,7 @@ for(i in 1:length(subscale_data)){
 alpha_drop <- purrr::map_dfr(alpha_drop, dplyr::bind_rows) %>% 
             round(digits = 3) %>%
             tibble::rownames_to_column("item") %>%
+  dplyr::mutate(item = gsub("(.*)\\.\\.\\.(.*)", "\\1", item)) %>% 
   dplyr::left_join(subscale_item_name, by = "item") %>%
   dplyr::select(subscale, wave, tidyr::everything())
 
@@ -483,6 +484,7 @@ for(i in 1:length(subscale_data)){
 item_stats <- purrr::map_dfr(item_stats, dplyr::bind_rows) %>% 
             round(digits = 3) %>%
             tibble::rownames_to_column("item") %>%
+  dplyr::mutate(item = gsub("(.*)\\.\\.\\.(.*)", "\\1", item)) %>% 
   dplyr::left_join(subscale_item_name, by = "item") %>%
   dplyr::select(subscale, tidyr::everything())
 
