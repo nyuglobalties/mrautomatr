@@ -174,10 +174,6 @@ if(is.null(read.any(fs_data_file_path)) == T){
 
 ## Data and Sample
 
-This report presents descriptive and psychometric information for `r measure` in `r year`.
-
-Table \@ref(tab:item) presents the descriptions of the items used in `r measure`.
-
 ```{r item, tab.cap="Item description", tab.id = "item", eval = params$item}
 # remove the auto-created dots when reading in excel sheets
 names(user_description) <- gsub("\\.", " ", names(user_description))
