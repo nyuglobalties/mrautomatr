@@ -34,7 +34,8 @@ get.modparam <- function(model, path){
                 sep = "")
 
   output <- output %>%
-    dplyr::rename_with(~paste( .x, wave, sep = ""), !dplyr::starts_with("param"))
+    dplyr::rename_with(~paste( .x, wave, sep = ""), !dplyr::starts_with("param")) %>%
+    filter(paramHeader != "Thresholds")
 
   return(output)
 }
