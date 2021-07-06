@@ -22,6 +22,9 @@ get.eigenvalue <- function(model, path){
   # the actual values are always in the rows with even numbers
   ev <- ev[1:length(ev) %% 2 == 0]
 
+  # remove row indicator 1, if any
+  ev <- gsub(" \\d{1} ","   ", ev)
+
   # remove leading white spaces
   ev <- gsub("^(\\s+)(.*)$", "\\2", ev)
 
