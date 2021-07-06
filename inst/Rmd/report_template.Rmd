@@ -19,6 +19,7 @@ params:
   cfa_model_fit: TRUE
   cfa_model_plot: TRUE
   cfa_model_parameters: TRUE
+  cfa_model_thresholds: FALSE # default is to mute the thresholds as the table can get very long
   cfa_r2: TRUE
   internal_reliability: TRUE
   summary_item_statistics: TRUE
@@ -72,8 +73,8 @@ user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
 user_description <- openxlsx::read.xlsx(params$template, sheet = 4)
 
 # load paths
-year <- user_path$year
-measure <- user_path$measure
+# year <- user_path$year
+# measure <- user_path$measure
 
 # need to evaluate box_path() if specified
 data_file_path <- 
@@ -403,6 +404,22 @@ flextable::flextable(df_cfa_modparam) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
+```{r cfa_model_thresholds, tab.cap = "CFA model thresholds at all waves", tab.id = "cfa_model_thresholds", eval = params$cfa_model_thresholds}
+df_cfa_modthreshold <- sup.cat(
+  lapply(model_cfa, 
+         get.modthreshold, 
+         path = model_file_path) %>% 
+  purrr::reduce(dplyr::left_join, 
+                by = c("paramHeader", "param")))
+
+flextable::flextable(df_cfa_modthreshold) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
 \newpage
 
 ```{r cfa_r2, tab.cap = "CFA model R-squared at all waves", tab.id = "cfa_r2", eval = params$cfa_r2}
@@ -447,7 +464,7 @@ for(i in 1:length(subscale_data)){
 alpha_drop <- purrr::map_dfr(alpha_drop, dplyr::bind_rows) %>% 
             round(digits = 3) %>%
             tibble::rownames_to_column("item") %>%
-  dplyr::mutate(item = gsub("(.*)\\.\\.\\.(.*)", "\\1", item)) %>% 
+  dplyr::mutate(item = gsub("\\.\\.\\.(\\d+)$", "", item)) %>% 
   dplyr::left_join(subscale_item_name, by = "item") %>%
   dplyr::select(subscale, wave, tidyr::everything())
 
@@ -484,7 +501,7 @@ for(i in 1:length(subscale_data)){
 item_stats <- purrr::map_dfr(item_stats, dplyr::bind_rows) %>% 
             round(digits = 3) %>%
             tibble::rownames_to_column("item") %>%
-  dplyr::mutate(item = gsub("(.*)\\.\\.\\.(.*)", "\\1", item)) %>% 
+  dplyr::mutate(item = gsub("\\.\\.\\.(\\d+)$", "", item)) %>% 
   dplyr::left_join(subscale_item_name, by = "item") %>%
   dplyr::select(subscale, tidyr::everything())
 
