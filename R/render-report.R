@@ -32,6 +32,7 @@
 #'                        cfa_model_fit = TRUE,
 #'                        cfa_model_plot = TRUE,
 #'                        cfa_model_parameters = TRUE,
+#'                        cfa_model_thresholds = FALSE, # default is to mute the thresholds as the table can get very long
 #'                        cfa_r2 = TRUE,
 #'                        internal_reliability = TRUE,
 #'                        summary_item_statistics = TRUE,

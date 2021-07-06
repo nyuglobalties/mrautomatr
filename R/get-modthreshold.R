@@ -26,7 +26,8 @@ get.modthreshold <- function(model, path){
   output <- output %>%
     dplyr::mutate(
       param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param)
-    )
+    ) %>%
+    filter(paramHeader == "Thresholds")
 
   wave <- paste("_",
                 "T",
@@ -34,8 +35,7 @@ get.modthreshold <- function(model, path){
                 sep = "")
 
   output <- output %>%
-    dplyr::rename_with(~paste( .x, wave, sep = ""), !dplyr::starts_with("param")) %>%
-    filter(paramHeader == "Thresholds")
+    dplyr::rename_with(~paste( .x, wave, sep = ""), !dplyr::starts_with("param"))
 
   return(output)
 }
