@@ -54,15 +54,21 @@ knitr::opts_chunk$set(
   fig.cap.sep = ": ")
 
 options(yaml.eval.expr = TRUE)
-# packages
-# library(officedown)
-# library(officer)
-# library(tidyverse)
-# library(psych)
-# library(MplusAutomation)
-# library(semPlot)
-# library(flextable)
-# library(mrautomatr)
+```
+
+```{r, include = F}
+# vertical and horizontal page margin set up
+ps <- officer::prop_section(
+  page_margins = officer::page_mar(
+    bottom = 1,
+    top = 1,
+    right = 1,
+    left = 1,
+    header = 0.5,
+    footer = 0.5,
+    gutter = 0),
+  type = "continuous"
+)
 ```
 
 ```{r user input}
@@ -155,6 +161,8 @@ if(is.null(read.any(fs_data_file_path)) == T){
     }
 ```
 
+
+`r officer::block_section(ps)`
 \newpage
 
 ## Table of content
@@ -169,11 +177,11 @@ if(is.null(read.any(fs_data_file_path)) == T){
 
 <!---BLOCK_TOC{seq_id: 'tab'}--->
 
-
+`r officer::block_section(ps)`
 \newpage
 
-
 ## Data and Sample
+
 
 ```{r item, tab.cap="Item description", tab.id = "item", eval = params$item}
 # remove the auto-created dots when reading in excel sheets
@@ -186,15 +194,19 @@ flextable::flextable(user_description) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
+`r officer::block_section(ps)`
 \newpage
 
 ## Method
 
 ...
 
+`r officer::block_section(ps)`
 \newpage
 
 ## Results
+
+`r officer::block_section(ps)`
 
 ### Descriptive Statistics
 
@@ -216,7 +228,9 @@ flextable::flextable(ds) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
+`r officer::block_section(ps)`
 \newpage
+
 ```{r ds_plot, fig.cap = "Item distribution",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300, eval = params$ds_plot}
 
 # descriptive plots
@@ -237,8 +251,8 @@ while (chunk_num >= 1) {
 }
 ```
 
+`r officer::block_section(ps)`
 \newpage
-
 
 <!---BLOCK_LANDSCAPE_START--->
 ```{r correlation_matrix_lg, tab.cap = "Factor correlations from the longitudinal invariance models", tab.id = "correlation_matrix_lg", eval = params$correlation_matrix_lg}
@@ -264,6 +278,7 @@ flextable::flextable(df_cor_lg) %>%
   flextable::italic(part = "footer") %>%
   flextable::set_table_properties(layout = "autofit")
 ```
+
 \newpage
 
 ```{r correlation_matrix_bivar, tab.cap = "Bivariate correlations among factors", tab.id = "correlation_matrix_bivar", eval = params$correlation_matrix_bivar}
@@ -333,6 +348,7 @@ ggplot2::ggplot(df_efa, ggplot2::aes(x = nfactor, y = ev)) +
   ggplot2::labs(x = "\nComponent Number", y = "Eigenvalue\n") + 
   ggplot2::theme_classic()
 ```
+
 \newpage
 
 ```{r cfa_model_fit, tab.cap = "CFA model fits at all waves", tab.id = "cfa_model_fit", eval = params$cfa_model_fit}
@@ -358,6 +374,7 @@ flextable::flextable(df_cfa) %>%
 ```
 
 \newpage
+
 ```{r cfa_model_plot, fig.cap = "CFA model final factor structure", fig.id = "cfa_model_plot", fig.height = 4, fig.width = 8, fig.align='center', dpi = 300, eval = params$cfa_model_plot}
 
 if(length(unique(sapply(sup.cat(lapply(model_cfa, get.est, path = model_file_path)), nrow))) > 1){
@@ -586,9 +603,7 @@ flextable::as_flextable(total_stats) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
-
 \newpage
-
 
 #### Measurement Invariance
 
@@ -646,7 +661,9 @@ flextable::as_flextable(df_inv_tx) %>%
   flextable::set_table_properties(layout = "autofit")
 
 ```
+
 \newpage
+
 ```{r inv_gender, tab.cap = "Gender invariance model fit", tab.id = "inv_gender", eval = params$inv_gender}
 
 df_inv_gender <- sup.cat(
@@ -699,7 +716,9 @@ flextable::as_flextable(df_inv_gender) %>%
   flextable::set_table_properties(layout = "autofit")
 
 ```
+
 \newpage
+
 ```{r inv_age, tab.cap = "Age invariance model fit", tab.id = "inv_age", eval = params$inv_age}
 
 df_inv_age <- sup.cat(
@@ -751,7 +770,9 @@ flextable::as_flextable(df_inv_age) %>%
   )  %>%
   flextable::set_table_properties(layout = "autofit")
 ```
+
 \newpage
+
 ```{r inv_lg, tab.cap = "Longitudinal invariance model fit", tab.id = "inv_lg", eval = params$inv_lg}
 
 df_inv_lg <- sup.cat(
@@ -801,3 +822,5 @@ flextable::flextable(df_inv_lg) %>%
 ## Reference
 
 Please use Zotero (or other reference managers) to add in-line citations and bibliography.
+
+`r officer::block_section(ps)`
