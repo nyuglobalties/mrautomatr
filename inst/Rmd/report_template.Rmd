@@ -79,8 +79,8 @@ user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
 user_description <- openxlsx::read.xlsx(params$template, sheet = 4)
 
 # load paths
-# year <- user_path$year
-# measure <- user_path$measure
+year <- user_path$year
+measure <- user_path$measure
 
 # need to evaluate box_path() if specified
 data_file_path <- 
