@@ -27,7 +27,7 @@ get.modparam <- function(model, path){
     dplyr::mutate(
     param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param)
   ) %>%
-    filter(paramHeader != "Thresholds")
+    dplyr::filter(paramHeader != "Thresholds")
 
 
   wave <- paste("_",
