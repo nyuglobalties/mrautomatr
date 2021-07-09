@@ -473,7 +473,8 @@ for(i in 1:length(subscale_data)){
           na.omit(
             dplyr::all_of(subscale_data[[i]])
             )
-          )
+          ),
+   check.keys = T,
    )$alpha.drop
   
 }
@@ -510,7 +511,8 @@ for(i in 1:length(subscale_data)){
           na.omit(
             dplyr::all_of(subscale_data[[i]])
             )
-          )
+          ),
+   check.keys = T,
    )$item.stats
   
 }
@@ -546,7 +548,8 @@ for(i in 1:length(subscale_data)){
           na.omit(
             dplyr::all_of(subscale_data[[i]])
             )
-          )
+          ),
+   check.keys = T,
    )$total
   
 }
