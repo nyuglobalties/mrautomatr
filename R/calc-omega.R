@@ -16,6 +16,8 @@
 
 calc.omega <- function(loadings, resid){
 
+  loadings = abs(loadings) # take absolute value because some could be negative
+
   omega <- (sum(loadings, na.rm = T))^2 / ( (sum(loadings, na.rm = T))^2 + sum(resid, na.rm = T) )
   omega <- round(omega, digits = 3)
 
