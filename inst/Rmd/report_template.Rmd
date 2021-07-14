@@ -421,6 +421,8 @@ flextable::flextable(df_cfa_modparam) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
+\newpage
+
 ```{r cfa_model_thresholds, tab.cap = "CFA model thresholds at all waves", tab.id = "cfa_model_thresholds", eval = params$cfa_model_thresholds}
 df_cfa_modthreshold <- sup.cat(
   lapply(model_cfa, 
