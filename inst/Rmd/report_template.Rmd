@@ -180,8 +180,11 @@ if(is.null(read.any(fs_data_file_path)) == T){
 `r officer::block_section(ps)`
 \newpage
 
-## Data and Sample
+## Measure Description
 
+\newpage
+
+## Data and Sample
 
 ```{r item, tab.cap="Item description", tab.id = "item", eval = params$item}
 # remove the auto-created dots when reading in excel sheets
