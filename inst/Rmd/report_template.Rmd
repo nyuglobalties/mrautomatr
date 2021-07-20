@@ -27,7 +27,7 @@ params:
   inv_lg: TRUE
   correlation_matrix_lg: TRUE
   correlation_matrix_bivar: TRUE
-  correlation_matrix_item: FALSE # default is to mute the item level correlations (set to TRUE to have it shown in Appendix)
+  correlation_matrix_item: FALSE # default is to mute the item level correlations (set to TRUE to have it shown)
 output: 
   officedown::rdocx_document:
     mapstyles:
@@ -77,7 +77,7 @@ user_path <- openxlsx::read.xlsx(params$template, sheet = 1)
 user_subscale <- openxlsx::read.xlsx(params$template, sheet = 2)
 user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
 user_description <- openxlsx::read.xlsx(params$template, sheet = 4)
-user_select_var <- openxlsx::read.xlsx(params$template, colNames = F ,sheet = 5)
+user_select_var <- openxlsx::read.xlsx(params$template, colNames = F, sheet = 5)
 
 # load paths
 year <- user_path$year
@@ -831,7 +831,6 @@ flextable::flextable(df_cfa_modthreshold) %>%
 
 \newpage
 
-
 ```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics", eval = params$summary_item_statistics}
 
 item_stats = list()
@@ -869,8 +868,13 @@ flextable::as_flextable(item_stats) %>%
 
 \newpage
 
-
 <!---BLOCK_LANDSCAPE_STOP--->
+
+## Conclusion
+
+...
+
+\newpage
 
 ## Reference
 
