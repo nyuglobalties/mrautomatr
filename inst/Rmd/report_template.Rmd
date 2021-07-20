@@ -19,7 +19,7 @@ params:
   cfa_model_thresholds: FALSE # default is to mute the thresholds (set to TRUE to have it shown in Appendix)
   cfa_r2: TRUE
   internal_reliability: TRUE
-  summary_item_statistics: TRUE
+  summary_item_statistics: FALSE # default is to mute the thresholds (set to TRUE to have it shown in Appendix)
   item_total_statistics: TRUE
   inv_tx: TRUE
   inv_gender: TRUE
@@ -27,7 +27,7 @@ params:
   inv_lg: TRUE
   correlation_matrix_lg: TRUE
   correlation_matrix_bivar: TRUE
-  correlation_matrix_item: FALSE # this might crash the document, so the default is FALSE
+  correlation_matrix_item: FALSE # default is to mute the item level correlations (set to TRUE to have it shown in Appendix)
 output: 
   officedown::rdocx_document:
     mapstyles:
@@ -77,6 +77,7 @@ user_path <- openxlsx::read.xlsx(params$template, sheet = 1)
 user_subscale <- openxlsx::read.xlsx(params$template, sheet = 2)
 user_model <- openxlsx::read.xlsx(params$template, sheet = 3)
 user_description <- openxlsx::read.xlsx(params$template, sheet = 4)
+user_select_var <- openxlsx::read.xlsx(params$template, colNames = F ,sheet = 5)
 
 # load paths
 year <- user_path$year
@@ -107,10 +108,20 @@ model_file_path <-
 # specify items for each subscale, without wave subscript (ordered by wave)
 subscale_data <- BBmisc::convertColsToList(user_subscale)
 
-  # a vector of all items for the current construct 
+# a vector of all items for the current construct 
 subset_data <- as.character(
   unlist(
     lapply(subscale_data, 
+           function(x) x[!is.na(x)])
+    )
+  )
+
+# A vector of selected items to generate correlation matrix
+select_var_data <- BBmisc::convertColsToList(user_select_var)
+
+select_var_data <- as.character(
+  unlist(
+    lapply(select_var_data, 
            function(x) x[!is.na(x)])
     )
   )
@@ -140,8 +151,14 @@ dat <- read.any(data_file_path)
 
 # subset of only items for the current construct
 dat_s <- as.data.frame(
+      dplyr::select(dat, 
+                    dplyr::all_of(subset_data)))
+
+# subset of selected variables for correlation matrix
+
+dat_cor <- as.data.frame(
   dplyr::select(dat, 
-                dplyr::all_of(subset_data)))
+                dplyr::all_of(select_var_data)))
 
 # subscale and its corresponding item names
 subscale_item_name <- as.data.frame(subscale_data) %>%
@@ -421,43 +438,6 @@ alpha_drop <- flextable::as_grouped_data(alpha_drop,
 flextable::as_flextable(alpha_drop) %>%
   flextable::align(part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>% 
-  flextable::bold(part = "header") %>%
-  flextable::fontsize(size = 10, part = "body") %>% 
-  flextable::set_table_properties(layout = "autofit")
-```
-
-\newpage
-
-```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics", eval = params$summary_item_statistics}
-
-item_stats = list()
-
-for(i in 1:length(subscale_data)){
-  
- item_stats[[i]] <- psych::alpha(
-   dplyr::select(dat_s, 
-          na.omit(
-            dplyr::all_of(subscale_data[[i]])
-            )
-          ),
-   check.keys = T,
-   )$item.stats
-  
-}
-
-item_stats <- purrr::map_dfr(item_stats, dplyr::bind_rows) %>% 
-            round(digits = 3) %>%
-            tibble::rownames_to_column("item") %>%
-  dplyr::mutate(item = gsub("\\.\\.\\.(\\d+)$", "", item)) %>% 
-  dplyr::left_join(subscale_item_name, by = "item") %>%
-  dplyr::select(subscale, tidyr::everything())
-
-item_stats <- flextable::as_grouped_data(item_stats, 
-                                         groups = c( "wave","subscale"))
-
-flextable::as_flextable(item_stats) %>%
-  flextable::align(part = "all") %>%
-  flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
   flextable::set_table_properties(layout = "autofit")
@@ -803,10 +783,15 @@ flextable::flextable(df_cor_bivar) %>%
 \newpage
 
 ```{r correlation_matrix_item, tab.cap = "Bivariate correlations among all items", tab.id = "correlation_matrix_item", eval = params$correlation_matrix_item}
-# Bivariate correlation matrix among all items
+# Bivariate correlation matrix among all items or selected items in sheet select_var
 # Warning!: this could be really long and takes some time to run, so the default is not to evaluate this chunk unless otherwise specified.
 
-df_cor_item <- get.cor.bivar(dat_s)
+df_cor_item <- 
+  if(is.null(select_var_data) == T){
+    get.cor.bivar(dat_s)
+  } else{
+    get.cor.bivar(dat_cor)
+  }
 
 df_cor_item <- df_cor_item %>%
             tibble::rownames_to_column("variable") %>%
@@ -845,6 +830,45 @@ flextable::flextable(df_cfa_modthreshold) %>%
 ```
 
 \newpage
+
+
+```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics", eval = params$summary_item_statistics}
+
+item_stats = list()
+
+for(i in 1:length(subscale_data)){
+  
+ item_stats[[i]] <- psych::alpha(
+   dplyr::select(dat_s, 
+          na.omit(
+            dplyr::all_of(subscale_data[[i]])
+            )
+          ),
+   check.keys = T,
+   )$item.stats
+  
+}
+
+item_stats <- purrr::map_dfr(item_stats, dplyr::bind_rows) %>% 
+            round(digits = 3) %>%
+            tibble::rownames_to_column("item") %>%
+  dplyr::mutate(item = gsub("\\.\\.\\.(\\d+)$", "", item)) %>% 
+  dplyr::left_join(subscale_item_name, by = "item") %>%
+  dplyr::select(subscale, tidyr::everything())
+
+item_stats <- flextable::as_grouped_data(item_stats, 
+                                         groups = c( "wave","subscale"))
+
+flextable::as_flextable(item_stats) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
 
 <!---BLOCK_LANDSCAPE_STOP--->
 
