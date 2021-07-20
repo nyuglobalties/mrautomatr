@@ -33,6 +33,9 @@ output:
     mapstyles:
       Normal: ['First Paragraph']
     reference_docx: !expr system.file("templates", "MR_word_template.docx", package = "mrautomatr")
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include = F}
@@ -178,9 +181,7 @@ if(is.null(read.any(fs_data_file_path)) == T){
     }
 ```
 
-
-`r officer::block_section(ps)`
-\newpage
+`r officer::block_section(ps)` \newpage
 
 ## Table of content
 
@@ -194,8 +195,7 @@ if(is.null(read.any(fs_data_file_path)) == T){
 
 <!---BLOCK_TOC{seq_id: 'tab'}--->
 
-`r officer::block_section(ps)`
-\newpage
+`r officer::block_section(ps)` \newpage
 
 ## Measure Description
 
@@ -214,15 +214,13 @@ flextable::flextable(user_description) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
-`r officer::block_section(ps)`
-\newpage
+`r officer::block_section(ps)` \newpage
 
 ## Method
 
 ...
 
-`r officer::block_section(ps)`
-\newpage
+`r officer::block_section(ps)` \newpage
 
 ## Results
 
@@ -248,8 +246,7 @@ flextable::flextable(ds) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
-`r officer::block_section(ps)`
-\newpage
+`r officer::block_section(ps)` \newpage
 
 ```{r ds_plot, fig.cap = "Item distribution", fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300, eval = params$ds_plot}
 
@@ -284,14 +281,14 @@ if(chunk_num == 0){
 }
 ```
 
-`r officer::block_section(ps)`
-\newpage
+`r officer::block_section(ps)` \newpage
 
 <!---BLOCK_LANDSCAPE_START--->
 
 ### Factor Analysis
 
 #### EFA and CFA
+
 ```{r efa_screeplot, fig.cap = "EFA model screeplots at all waves", fig.id = "efa_screeplot", fig.height = 4, fig.width = 9, dpi = 300, eval = params$efa_screeplot}
 
 df_efa <- sup.cat(
@@ -405,6 +402,36 @@ flextable::flextable(df_cfa_r2) %>%
 
 #### Internal Reliability and Correlations
 
+See the [help page](https://personality-project.org/r/html/alpha.html) of `psych::alpha` for detailed explanation of the statistics in the table.
+
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| Statistics      | Explanation                                                                                                                  |
++=================+==============================================================================================================================+
+| `raw_alpha`     | Cronbach's alpha (Cronbach, 1951) based upon the covariances                                                                 |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `std_alpha`     | The standarized alpha based upon the correlations                                                                            |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `G6(smc)`       | Guttman's Lambda 6 reliability                                                                                               |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `average_r`     | The average interitem correlation                                                                                            |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `S/N`           | Signal/Noise ratio                                                                                                           |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `alpha_se`      | Standard error of alpha                                                                                                      |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `var_r`         | The variance of the interitem correlations                                                                                   |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `median_r`      | The median of the interitem correlations                                                                                     |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `mean`          | The mean of the scale formed by averaging the items                                                                          |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `sd`            | The standard deviation of the total score                                                                                    |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `omega_lg`      | McDonald's Omega (McDonald, 1999) with factor loadings and residuals extracted from the scalar longitudinal invariance model |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+| `omega_by_wave` | McDonald's Omega (McDonald, 1999) with factor loadings and residuals extracted from each wave of CFA model                   |
++-----------------+------------------------------------------------------------------------------------------------------------------------------+
+
 ```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability", eval = params$internal_reliability}
 
 # (example: https://rpubs.com/hauselin/reliabilityanalysis)
@@ -429,11 +456,12 @@ alpha_drop <- purrr::map_dfr(alpha_drop, dplyr::bind_rows) %>%
             tibble::rownames_to_column("item") %>%
   dplyr::mutate(item = gsub("\\.\\.\\.(\\d+)$", "", item)) %>% 
   dplyr::left_join(subscale_item_name, by = "item") %>%
-  dplyr::select(subscale, wave, tidyr::everything())
+  dplyr::select(subscale, wave, tidyr::everything()) %>% 
+  rename(alpha_se = `alpha se`, var_r = `var.r`, median_r = `med.r`,
+         std_alpha = `std.alpha`)
 
 alpha_drop <- flextable::as_grouped_data(alpha_drop, 
                                          groups = c( "wave","subscale"))
-
 
 flextable::as_flextable(alpha_drop) %>%
   flextable::align(part = "all") %>%
@@ -493,7 +521,8 @@ total_stats <- purrr::map_dfr(total_stats, dplyr::bind_rows) %>%
   dplyr::mutate(wave = gsub("(.*)(_)(\\d+)", "\\3", subscale_wave),
                 wave = paste("T", wave, sep = ""),
                 subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale_wave)) %>%
-  dplyr::select(subscale, wave, tidyr::everything(), -subscale_wave)
+  dplyr::select(subscale, wave, tidyr::everything(), -subscale_wave) %>%
+  rename(alpha_se = `ase`, std_alpha = `std.alpha`)
 
 if(sum(is.na(total_stats$omega_lg)) > 0){
   stop("Omega from longitudinal model is not showing up, potentially because: 1) the longitudinal model is not specified; or 2) subscale/item names are different in the excel sheet and in the longitudinal invariance model. Please double check and make sure to always add an underscore and a wave tag (_#) in the subscale section to both the construct name and the item names in your excel sheet and in your Mplus input file before you run the model. For Mplus models, you may need to rename your variables (i.e. add wave tags) before you run the models. If you only have one wave, simply use (_1) as a wave tag, and the number 1 will be picked up as the wave tag in the tables in this report.")
@@ -830,6 +859,24 @@ flextable::flextable(df_cfa_modthreshold) %>%
 ```
 
 \newpage
+
+The explanations of the summary item statistics by each subscale are as follows (if table is printed):
+
++------------+-------------------------------------------------------------------------------------------------------------------------+
+| Statistics | Explanation                                                                                                             |
++============+=========================================================================================================================+
+| `raw.r`    | | The correlation of each item with the total score, not corrected for item overlap                                     |
++------------+-------------------------------------------------------------------------------------------------------------------------+
+| `std.r`    | | The correlation of each item with the total score (not corrected for item overlap) if the items were all standardized |
++------------+-------------------------------------------------------------------------------------------------------------------------+
+| `r.cor`    | | Item whole correlation corrected for item overlap and scale reliability                                               |
++------------+-------------------------------------------------------------------------------------------------------------------------+
+| `r.drop`   | | Item whole correlation for this item against the scale without this item                                              |
++------------+-------------------------------------------------------------------------------------------------------------------------+
+| `mean`     | | The mean of each item                                                                                                 |
++------------+-------------------------------------------------------------------------------------------------------------------------+
+| `sd`       | | The standard deviation of each item                                                                                   |
++------------+-------------------------------------------------------------------------------------------------------------------------+
 
 ```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics", eval = params$summary_item_statistics}
 
