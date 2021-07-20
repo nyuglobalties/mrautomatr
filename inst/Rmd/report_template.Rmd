@@ -12,14 +12,11 @@ params:
   item: TRUE
   descriptive: TRUE
   ds_plot: TRUE
-  correlation_matrix_lg: TRUE
-  correlation_matrix_bivar: TRUE
-  correlation_matrix_item: FALSE # this might crash the document, so the default is False
   efa_screeplot: TRUE
   cfa_model_fit: TRUE
   cfa_model_plot: TRUE
   cfa_model_parameters: TRUE
-  cfa_model_thresholds: FALSE # default is to mute the thresholds as the table can get very long
+  cfa_model_thresholds: FALSE # default is to mute the thresholds (set to TRUE to have it shown in Appendix)
   cfa_r2: TRUE
   internal_reliability: TRUE
   summary_item_statistics: TRUE
@@ -28,6 +25,9 @@ params:
   inv_gender: TRUE
   inv_age: TRUE
   inv_lg: TRUE
+  correlation_matrix_lg: TRUE
+  correlation_matrix_bivar: TRUE
+  correlation_matrix_item: FALSE # this might crash the document, so the default is FALSE
 output: 
   officedown::rdocx_document:
     mapstyles:
@@ -234,7 +234,7 @@ flextable::flextable(ds) %>%
 `r officer::block_section(ps)`
 \newpage
 
-```{r ds_plot, fig.cap = "Item distribution",fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300, eval = params$ds_plot}
+```{r ds_plot, fig.cap = "Item distribution", fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300, eval = params$ds_plot}
 
 # descriptive plots
 
@@ -271,78 +271,6 @@ if(chunk_num == 0){
 \newpage
 
 <!---BLOCK_LANDSCAPE_START--->
-```{r correlation_matrix_lg, tab.cap = "Factor correlations from the longitudinal invariance models", tab.id = "correlation_matrix_lg", eval = params$correlation_matrix_lg}
-# Factor correlation matrix from longitudinal models
-
-df_cor_lg <- sup.cat(
-  get.cor.lg(model = model_inv_lg[3], # the third one is always the scalar model
-             path = model_file_path,
-             string = ".WITH$"))
-
-df_cor_lg <- df_cor_lg %>%
-             tibble::rownames_to_column("variable") %>%
-             dplyr::rename(" " = variable)
-
-flextable::flextable(df_cor_lg) %>%
-  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-                  colwidths =  ncol(df_cor_lg)) %>%
-  flextable::align(part = "all") %>% 
-  flextable::font(fontname = "Times", part = "all") %>%
-  flextable::bold(part = "header") %>%
-  flextable::bold(j = " ", part = "body") %>%
-  flextable::fontsize(size = 10, part = "all") %>% 
-  flextable::italic(part = "footer") %>%
-  flextable::set_table_properties(layout = "autofit")
-```
-
-\newpage
-
-```{r correlation_matrix_bivar, tab.cap = "Bivariate correlations among factors", tab.id = "correlation_matrix_bivar", eval = params$correlation_matrix_bivar}
-# Bivariate correlation matrix
-
-df_cor_bivar <- get.cor.bivar(dat_fs)
-
-df_cor_bivar <- df_cor_bivar %>%
-            tibble::rownames_to_column("variable") %>%
-            dplyr::rename(" " = variable)
-
-flextable::flextable(df_cor_bivar) %>%
-  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-                  colwidths =  ncol(df_cor_bivar)) %>%
-  flextable::align(part = "all") %>% 
-  flextable::font(fontname = "Times", part = "all") %>%
-  flextable::bold(part = "header") %>%
-  flextable::bold(j = " ", part = "body") %>%
-  flextable::fontsize(size = 10, part = "all") %>% 
-  flextable::italic(part = "footer") %>%
-  flextable::set_table_properties(layout = "autofit")
-```
-
-\newpage
-
-```{r correlation_matrix_item, tab.cap = "Bivariate correlations among all items", tab.id = "correlation_matrix_item", eval = params$correlation_matrix_item}
-# Bivariate correlation matrix among all items
-# Warning!: this could be really long and takes some time to run, so the default is not to evaluate this chunk unless otherwise specified.
-
-df_cor_item <- get.cor.bivar(dat_s)
-
-df_cor_item <- df_cor_item %>%
-            tibble::rownames_to_column("variable") %>%
-            dplyr::rename(" " = variable)
-
-flextable::flextable(df_cor_item) %>%
-  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.",
-                  colwidths =  ncol(df_cor_item)) %>%
-  flextable::align(part = "all") %>%
-  flextable::font(fontname = "Times", part = "all") %>%
-  flextable::bold(part = "header") %>%
-  flextable::bold(j = " ", part = "body") %>%
-  flextable::fontsize(size = 10, part = "all") %>%
-  flextable::italic(part = "footer") %>%
-  flextable::set_table_properties(layout = "autofit")
-```
-
-\newpage
 
 ### Factor Analysis
 
@@ -430,24 +358,6 @@ df_cfa_modparam <- sup.cat(
                 by = c("paramHeader", "param")))
 
 flextable::flextable(df_cfa_modparam) %>%
-  flextable::align(part = "all") %>%
-  flextable::font(fontname = "Times", part = "all") %>%
-  flextable::bold(part = "header") %>%
-  flextable::fontsize(size = 10, part = "body") %>% 
-  flextable::set_table_properties(layout = "autofit")
-```
-
-\newpage
-
-```{r cfa_model_thresholds, tab.cap = "CFA model thresholds at all waves", tab.id = "cfa_model_thresholds", eval = params$cfa_model_thresholds}
-df_cfa_modthreshold <- sup.cat(
-  lapply(model_cfa, 
-         get.modthreshold, 
-         path = model_file_path) %>% 
-  purrr::reduce(dplyr::left_join, 
-                by = c("paramHeader", "param")))
-
-flextable::flextable(df_cfa_modthreshold) %>%
   flextable::align(part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
@@ -837,8 +747,106 @@ flextable::flextable(df_inv_lg) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
 
-<!---BLOCK_LANDSCAPE_STOP--->
+\newpage
 
+### Evidence of Correlational Validity
+
+```{r correlation_matrix_lg, tab.cap = "Partial correlations among latent variables across time", tab.id = "correlation_matrix_lg", eval = params$correlation_matrix_lg}
+# Factor correlation matrix from longitudinal models
+
+df_cor_lg <- sup.cat(
+  get.cor.lg(model = model_inv_lg[3], # the third one is always the scalar model
+             path = model_file_path,
+             string = ".WITH$"))
+
+df_cor_lg <- df_cor_lg %>%
+             tibble::rownames_to_column("variable") %>%
+             dplyr::rename(" " = variable)
+
+flextable::flextable(df_cor_lg) %>%
+  flextable::add_footer_row(values = "Notes: Correlation estimates are obtained from the longitudinal invariance models.", colwidths =  ncol(df_cor_lg)) %>%
+  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+                  colwidths =  ncol(df_cor_lg)) %>%
+  flextable::align(part = "all") %>% 
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::bold(j = " ", part = "body") %>%
+  flextable::fontsize(size = 10, part = "all") %>% 
+  flextable::italic(part = "footer") %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r correlation_matrix_bivar, tab.cap = "Bivariate correlations among factor scores", tab.id = "correlation_matrix_bivar", eval = params$correlation_matrix_bivar}
+# Bivariate correlation matrix
+
+df_cor_bivar <- get.cor.bivar(dat_fs)
+
+df_cor_bivar <- df_cor_bivar %>%
+            tibble::rownames_to_column("variable") %>%
+            dplyr::rename(" " = variable)
+
+flextable::flextable(df_cor_bivar) %>%
+  flextable::add_footer_row(values = "Notes: Factor scores are obtained from the longitudinal invariance models", colwidths =  ncol(df_cor_bivar)) %>%
+  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+                  colwidths =  ncol(df_cor_bivar)) %>%
+  flextable::align(part = "all") %>% 
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::bold(j = " ", part = "body") %>%
+  flextable::fontsize(size = 10, part = "all") %>% 
+  flextable::italic(part = "footer") %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+```{r correlation_matrix_item, tab.cap = "Bivariate correlations among all items", tab.id = "correlation_matrix_item", eval = params$correlation_matrix_item}
+# Bivariate correlation matrix among all items
+# Warning!: this could be really long and takes some time to run, so the default is not to evaluate this chunk unless otherwise specified.
+
+df_cor_item <- get.cor.bivar(dat_s)
+
+df_cor_item <- df_cor_item %>%
+            tibble::rownames_to_column("variable") %>%
+            dplyr::rename(" " = variable)
+
+flextable::flextable(df_cor_item) %>%
+  flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.",
+                  colwidths =  ncol(df_cor_item)) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::bold(j = " ", part = "body") %>%
+  flextable::fontsize(size = 10, part = "all") %>%
+  flextable::italic(part = "footer") %>%
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+## Appendix
+
+```{r cfa_model_thresholds, tab.cap = "CFA model thresholds at all waves", tab.id = "cfa_model_thresholds", eval = params$cfa_model_thresholds}
+df_cfa_modthreshold <- sup.cat(
+  lapply(model_cfa, 
+         get.modthreshold, 
+         path = model_file_path) %>% 
+  purrr::reduce(dplyr::left_join, 
+                by = c("paramHeader", "param")))
+
+flextable::flextable(df_cfa_modthreshold) %>%
+  flextable::align(part = "all") %>%
+  flextable::font(fontname = "Times", part = "all") %>%
+  flextable::bold(part = "header") %>%
+  flextable::fontsize(size = 10, part = "body") %>% 
+  flextable::set_table_properties(layout = "autofit")
+```
+
+\newpage
+
+<!---BLOCK_LANDSCAPE_STOP--->
 
 ## Reference
 
