@@ -117,15 +117,25 @@ subset_data <- as.character(
   )
 
 # A vector of selected items to generate correlation matrix
-select_var_data <- BBmisc::convertColsToList(user_select_var)
+select_var_data <- 
+  if(is.null(user_select_var) == T){
+    user_select_var
+  } else{
+    BBmisc::convertColsToList(user_select_var)
+  }
 
-select_var_data <- as.character(
-  unlist(
-    lapply(select_var_data, 
-           function(x) x[!is.na(x)])
+select_var_data <- 
+  if(is.null(select_var_data) == T){
+    user_select_var
+  } else{
+    as.character(
+    unlist(
+      lapply(select_var_data, 
+             function(x) x[!is.na(x)])
+      )
     )
-  )
-
+  }
+  
 # a vector of EFA models (ordered by wave)
 model_efa <- na.omit(user_model$model_efa)
 
@@ -418,6 +428,7 @@ See the [help page](https://personality-project.org/r/html/alpha.html) of `psych
 `mean`         : The mean of the scale formed by averaging the items                                                                         
 `sd`           : The standard deviation of the total score                                                                                   
 `omega_lg`     : McDonald's Omega (McDonald, 1999) with factor loadings and residuals extracted from the scalar longitudinal invariance model
+
 `omega_by_wave`: McDonald's Omega (McDonald, 1999) with factor loadings and residuals extracted from each wave of CFA model                  
 
 ```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability", eval = params$internal_reliability}
@@ -445,7 +456,7 @@ alpha_drop <- purrr::map_dfr(alpha_drop, dplyr::bind_rows) %>%
   dplyr::mutate(item = gsub("\\.\\.\\.(\\d+)$", "", item)) %>% 
   dplyr::left_join(subscale_item_name, by = "item") %>%
   dplyr::select(subscale, wave, tidyr::everything()) %>% 
-  rename(alpha_se = `alpha se`, var_r = `var.r`, median_r = `med.r`,
+  dplyr::rename(alpha_se = `alpha se`, var_r = `var.r`, median_r = `med.r`,
          std_alpha = `std.alpha`)
 
 alpha_drop <- flextable::as_grouped_data(alpha_drop, 
@@ -510,7 +521,7 @@ total_stats <- purrr::map_dfr(total_stats, dplyr::bind_rows) %>%
                 wave = paste("T", wave, sep = ""),
                 subscale = gsub("(.*)(_)(\\d+)", "\\1", subscale_wave)) %>%
   dplyr::select(subscale, wave, tidyr::everything(), -subscale_wave) %>%
-  rename(alpha_se = `ase`, std_alpha = `std.alpha`)
+  dplyr::rename(alpha_se = `ase`, std_alpha = `std.alpha`)
 
 if(sum(is.na(total_stats$omega_lg)) > 0){
   stop("Omega from longitudinal model is not showing up, potentially because: 1) the longitudinal model is not specified; or 2) subscale/item names are different in the excel sheet and in the longitudinal invariance model. Please double check and make sure to always add an underscore and a wave tag (_#) in the subscale section to both the construct name and the item names in your excel sheet and in your Mplus input file before you run the model. For Mplus models, you may need to rename your variables (i.e. add wave tags) before you run the models. If you only have one wave, simply use (_1) as a wave tag, and the number 1 will be picked up as the wave tag in the tables in this report.")
@@ -850,11 +861,16 @@ flextable::flextable(df_cfa_modthreshold) %>%
 
 The explanations of the summary item statistics by each subscale are as follows (if table is printed):
 
-`raw.r` : The correlation of each item with the total score, not corrected for item overlap                                   
+`raw.r` : The correlation of each item with the total score, not corrected for item overlap
+
 `std.r` : The correlation of each item with the total score (not corrected for item overlap) if the items were all standardized
-`r.cor` : Item whole correlation corrected for item overlap and scale reliability                                             
-`r.drop`: Item whole correlation for this item against the scale without this item                                            
-`mean`  : The mean of each item                                                                                               
+
+`r.cor` : Item whole correlation corrected for item overlap and scale reliability
+
+`r.drop`: Item whole correlation for this item against the scale without this item
+
+`mean`  : The mean of each item   
+
 `sd`    : The standard deviation of each item                                                                                 
 
 ```{r summary_item_statistics, tab.cap = "Summary item statistics by each subscale", tab.id = "summary_item_statistics", eval = params$summary_item_statistics}
