@@ -208,6 +208,8 @@ if(is.null(read.any(fs_data_file_path)) == T){
 
 ## Measure Description
 
+...
+
 \newpage
 
 ## Data and Sample
@@ -417,19 +419,29 @@ flextable::flextable(df_cfa_r2) %>%
 
 See the [help page](https://personality-project.org/r/html/alpha.html) of `psych::alpha` for detailed explanation of the statistics in the table.
 
-`raw_alpha`    : Cronbach's alpha (Cronbach, 1951) based upon the covariances                                                                
-`std_alpha`    : The standarized alpha based upon the correlations                                                                           
-`G6(smc)`      : Guttman's Lambda 6 reliability                                                                                              
-`average_r`    : The average interitem correlation                                                                                           
-`S/N`          : Signal/Noise ratio                                                                                                          
-`alpha_se`     : Standard error of alpha                                                                                                     
-`var_r`        : The variance of the interitem correlations                                                                                  
-`median_r`     : The median of the interitem correlations                                                                                    
-`mean`         : The mean of the scale formed by averaging the items                                                                         
-`sd`           : The standard deviation of the total score                                                                                   
+`raw_alpha`    : Cronbach's alpha (Cronbach, 1951) based upon the covariances
+
+`std_alpha`    : The standarized alpha based upon the correlations
+
+`G6(smc)`      : Guttman's Lambda 6 reliability
+
+`average_r`    : The average interitem correlation
+
+`S/N`          : Signal/Noise ratio
+
+`alpha_se`     : Standard error of alpha
+
+`var_r`        : The variance of the interitem correlations
+
+`median_r`     : The median of the interitem correlations
+
+`mean`         : The mean of the scale formed by averaging the items
+
+`sd`           : The standard deviation of the total score
+
 `omega_lg`     : McDonald's Omega (McDonald, 1999) with factor loadings and residuals extracted from the scalar longitudinal invariance model
 
-`omega_by_wave`: McDonald's Omega (McDonald, 1999) with factor loadings and residuals extracted from each wave of CFA model                  
+`omega_by_wave`: McDonald's Omega (McDonald, 1999) with factor loadings and residuals extracted from each wave of CFA model
 
 ```{r internal_reliability, tab.cap = "Internal reliability by each subscale", tab.id = "internal_reliability", eval = params$internal_reliability}
 
