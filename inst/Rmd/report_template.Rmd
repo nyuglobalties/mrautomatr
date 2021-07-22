@@ -208,12 +208,6 @@ if(is.null(read.any(fs_data_file_path)) == T){
 
 ## Measure Description
 
-...
-
-\newpage
-
-## Data and Sample
-
 ```{r item, tab.cap="Item description", tab.id = "item", eval = params$item}
 # remove the auto-created dots when reading in excel sheets
 names(user_description) <- gsub("\\.", " ", names(user_description))
@@ -224,6 +218,13 @@ flextable::flextable(user_description) %>%
   flextable::line_spacing(space = 1) %>%
   flextable::set_table_properties(layout = "autofit")
 ```
+
+`r officer::block_section(ps)` 
+\newpage
+
+## Data and Sample
+
+...
 
 `r officer::block_section(ps)` 
 \newpage
