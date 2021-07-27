@@ -265,34 +265,26 @@ flextable::flextable(ds) %>%
 
 ```{r ds_plot, fig.cap = "Item distribution", fig.id = "ds_plot", fig.height = 8, fig.width = 6, dpi = 300, eval = params$ds_plot}
 
-# descriptive plots
-
+# set canvas (6 columns are ideal for display in Word)
 par(mfrow = c(6,6),
     mar = c(4,1,1,1))
 
-chunk_num <- ncol(dat_s) %/% 24
+# create canvas number
+chunk_num <- divi(ncol(dat_s), 36)
 
-# If number of plot is fewer than 24
-if(chunk_num == 0){
-  
-  for(i in 1:ncol(dat_s)){
-    hist(dat_s[, i], main = "", xlab = names(dat_s)[i], col = "white")
-  }
-  
-} else{
-
-# If number of plot is more than 24
-  while (chunk_num >= 1) {
+# note that dat_s needs to be a data.frame instead of a tibble to have the for loop work on the set canvas
+n = 1
+while (n <= chunk_num) {
+  for (i in 1:36) {
+    index <- 36*(n - 1) + i
     
-  for (i in 1:24) {
-    index <- 24*(chunk_num - 1) + i
-
+    if(index > ncol(dat_s)){
+      break
+    }
+    
     hist(dat_s[, index], main = "", xlab = names(dat_s)[index], col = "white")
   }
-
-  chunk_num <- chunk_num - 1
-  }
-  
+  n <- n + 1
 }
 ```
 

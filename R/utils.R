@@ -45,3 +45,10 @@ sup.cat <- function(code){
                           {code}
   )
 }
+
+# create chunk_num for histogram canvas
+divi <- function(a,b){
+  if(a %% b == 0){a %/% b} else{
+    a %/% b + 1
+  }
+}
