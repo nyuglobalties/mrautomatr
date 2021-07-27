@@ -844,6 +844,12 @@ flextable::flextable(df_cor_item) %>%
 
 \newpage
 
+## Conclusion
+
+...
+
+\newpage
+
 ## Appendix
 
 ```{r cfa_model_thresholds, tab.cap = "CFA model thresholds at all waves", tab.id = "cfa_model_thresholds", eval = params$cfa_model_thresholds}
@@ -916,12 +922,6 @@ flextable::as_flextable(item_stats) %>%
 \newpage
 
 <!---BLOCK_LANDSCAPE_STOP--->
-
-## Conclusion
-
-...
-
-\newpage
 
 ## Reference
 
