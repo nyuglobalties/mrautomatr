@@ -844,11 +844,16 @@ flextable::flextable(df_cor_item) %>%
 
 \newpage
 
+<!---BLOCK_LANDSCAPE_STOP--->
+
 ## Conclusion
 
 ...
 
+`r officer::block_section(ps)`
 \newpage
+
+<!---BLOCK_LANDSCAPE_START--->
 
 ## Appendix
 
