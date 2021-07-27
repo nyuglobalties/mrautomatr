@@ -414,7 +414,7 @@ See the [help page](https://personality-project.org/r/html/alpha.html) of `psych
 
 `raw_alpha`    : Cronbach's alpha (Cronbach, 1951) based upon the covariances
 
-`std_alpha`    : The standarized alpha based upon the correlations
+`std_alpha`    : The standardized alpha based upon the correlations
 
 `G6(smc)`      : Guttman's Lambda 6 reliability
 
