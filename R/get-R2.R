@@ -16,7 +16,8 @@ get.R2 <- function(model, path){
   # accepts item names and threshold names with or without wave tags
   output <- output %>%
     dplyr::mutate(
-    param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param)
+    param = gsub( "^(.*)_(\\d+)(.*)$", "\\1", param),
+    param = gsub("^([A-Za-z]+)(\\d+)(R)(\\d+)$", "\\1\\2\\3", param)
   )
 
   wave <- paste("_",
