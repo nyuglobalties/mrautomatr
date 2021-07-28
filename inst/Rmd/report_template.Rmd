@@ -801,7 +801,7 @@ df_cor_bivar <- df_cor_bivar %>%
             dplyr::rename(" " = variable)
 
 flextable::flextable(df_cor_bivar) %>%
-  flextable::add_footer_row(values = "Notes: Factor scores are obtained from the longitudinal invariance models", colwidths =  ncol(df_cor_bivar)) %>%
+  flextable::add_footer_row(values = "Notes: Factor scores are obtained from the longitudinal invariance models.", colwidths =  ncol(df_cor_bivar)) %>%
   flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
                   colwidths =  ncol(df_cor_bivar)) %>%
   flextable::align(part = "all") %>% 
