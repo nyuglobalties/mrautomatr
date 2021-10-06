@@ -8,41 +8,41 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' render_report(output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
-#'               output_file = "Report_lebanon_cs.docx",
-#'               parameters = list(
-#'                        # set R code print options
-#'                        printcode = FALSE,
-#'                        printwarning = FALSE,
-#'                        storecache = FALSE,
+#'render_report(output_dir = box_path("Box 3EA Team Folder/For Zezhen/MR automation/NGY1_FA/PSRA"),
+#'                output_file = "Report_niger_psra.docx",
+#'                parameters = list(
+#'                  # set R code print options
+#'                  printcode = FALSE,
+#'                  printwarning = FALSE,
+#'                  storecache = FALSE,
 #'
-#'                        # set report overall parameters
-#'                        template = "/Users/michaelfive/Google Drive/NYU/3EA/test/input_template_lebanon_cs.xlsx",
-#'                        set_title = "Lebanon Year 1 (2016-2017)",
-#'                        set_author = "Jane Doe",
+#'                  # set report overall parameters
+#'                  template = file.path(path, "input_template_niger_psra.xlsx"),
+#'                  set_title = "Niger Year 1 Measurement Report - Preschool Stress Regulation Assessment (PSRA)",
+#'                  set_author = "Jane Doe",
 #'
-#'                        # select report sections
-#'                        item = TRUE,
-#'                        descriptive = TRUE,
-#'                        ds_plot = TRUE,
-#'                        correlation_matrix_lg = TRUE,
-#'                        correlation_matrix_bivar = TRUE,
-#'                        correlation_matrix_item = FALSE, # BE CAREFUL! This might crash the document.
-#'                        efa_screeplot = TRUE,
-#'                        cfa_model_fit = TRUE,
-#'                        cfa_model_plot = TRUE,
-#'                        cfa_model_parameters = TRUE,
-#'                        cfa_model_thresholds = FALSE, # default is to mute the thresholds as the table can get very long
-#'                        cfa_r2 = TRUE,
-#'                        internal_reliability = TRUE,
-#'                        summary_item_statistics = TRUE,
-#'                        item_total_statistics = TRUE,
-#'                        inv_tx = TRUE,
-#'                        inv_gender = TRUE,
-#'                        inv_age = TRUE,
-#'                        inv_lg = TRUE
-#'                        ))
-#'               }
+#'                  # select report sections
+#'                  item = TRUE,
+#'                  descriptive = TRUE,
+#'                  ds_plot = TRUE,
+#'                  correlation_matrix_lg = TRUE,
+#'                  correlation_matrix_bivar = TRUE,
+#'                  correlation_matrix_item = FALSE, # BE CAREFUL! This might crash the document.
+#'                  efa_screeplot = TRUE,
+#'                  cfa_model_fit = TRUE,
+#'                  cfa_model_plot = TRUE,
+#'                  cfa_model_parameters = TRUE,
+#'                  cfa_model_thresholds = FALSE, # default is to mute the thresholds as the table can get very long
+#'                  cfa_r2 = TRUE,
+#'                  internal_reliability = TRUE,
+#'                  summary_item_statistics = TRUE,
+#'                  item_total_statistics = TRUE,
+#'                  inv_tx = TRUE,
+#'                  inv_gender = TRUE,
+#'                  inv_age = TRUE,
+#'                  inv_lg = TRUE)
+#'                  )
+#'         }
 #' @seealso `render_report`, `render_report_manual`
 render_report = function(output_dir,
                          output_file,

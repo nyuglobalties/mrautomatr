@@ -20,9 +20,10 @@ and click/unclick sections that you don't want in the report (see README.md for 
 }
 \examples{
 \dontrun{
-render_report_manual(output_file = "Report_lebanon_cs.docx",
-                     output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
-                    }
+render_report_manual(output_file = "Report_niger_psra.docx",
+                      output_dir = box_path("Box 3EA Team Folder/For Zezhen/MR automation/NGY1_FA/PSRA")
+                     )
+         }
 }
 \seealso{
 \code{render_report}, \code{render_report_multiple}

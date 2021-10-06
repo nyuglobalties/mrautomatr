@@ -12,9 +12,10 @@
 #' @seealso `render_report`, `render_report_multiple`
 #' @examples
 #' \dontrun{
-#' render_report_manual(output_file = "Report_lebanon_cs.docx",
-#'                      output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test")
-#'                     }
+#'render_report_manual(output_file = "Report_niger_psra.docx",
+#'                       output_dir = box_path("Box 3EA Team Folder/For Zezhen/MR automation/NGY1_FA/PSRA")
+#'                      )
+#'          }
 render_report_manual <- function(output_dir, output_file){
   rmarkdown::render(system.file("Rmd", "report_template.Rmd", package = "mrautomatr"),
                     params = "ask",

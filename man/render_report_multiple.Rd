@@ -29,10 +29,11 @@ Render multiple measurement reports at once
 }
 \examples{
 \dontrun{
-render_report_multiple(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
+render_report_multiple(input_dir = box_path("Box 3EA Team Folder/For Zezhen/MR automation/NGY1_FA"),
                        templates = c("input_template_lebanon_cs.xlsx",
                                      "input_template_niger_psra.xlsx"),
-                       output_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test",
+                       output_dir = box_path("Box 3EA Team Folder/For Zezhen/MR automation/NGY1_FA"),
+
                        # set parameters globally for all documents
                        parameters = list(
                        # set R code print options
@@ -55,6 +56,7 @@ render_report_multiple(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test
                        cfa_model_fit = TRUE,
                        cfa_model_plot = TRUE,
                        cfa_model_parameters = TRUE,
+                       cfa_model_thresholds = FALSE, # default is to mute the thresholds as the table can get very long
                        cfa_r2 = TRUE,
                        internal_reliability = TRUE,
                        summary_item_statistics = TRUE,
@@ -62,9 +64,9 @@ render_report_multiple(input_dir = "/Users/michaelfive/Google Drive/NYU/3EA/test
                        inv_tx = TRUE,
                        inv_gender = TRUE,
                        inv_age = TRUE,
-                       inv_lg = TRUE
-                       ))
-                      }
+                       inv_lg = TRUE)
+                       )
+       }
 }
 \seealso{
 \code{render_report_manual}, \code{render_report_multiple}
