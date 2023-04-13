@@ -366,7 +366,7 @@ semPlot::semPaths(model_cfa_str, style="lisrel", layout = "tree",
          nCharNodes = 5, sizeMan = 4, sizeMan2 = 4, sizeLat = 8, 
          thresholds = F, residuals = F, intercepts = F, edge.color = "gray40", 
          edgeLabels = plot_label$label, edge.label.cex = 0.3,
-         edge.label.position = 0.8, label.cex = 1, mar=c(1,1,3,1))
+         edge.label.position = 0.8, label.cex = 1, mar=c(3,1,3,1))
 ```
 
 \newpage
