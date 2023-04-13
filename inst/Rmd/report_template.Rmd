@@ -213,7 +213,7 @@ if(is.null(read.any(fs_data_file_path)) == T){
 names(user_description) <- gsub("\\.", " ", names(user_description))
 
 flextable::flextable(user_description) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>% 
   flextable::line_spacing(space = 1) %>%
   flextable::set_table_properties(layout = "autofit")
@@ -251,7 +251,7 @@ ds <- skimr::skim(dat_s) %>%
   dplyr::rename(variable = skim_variable)
   
 flextable::flextable(ds) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>% 
   flextable::bold(part = "header") %>%
   flextable::italic(j = 6:10, part = "header") %>%
@@ -331,7 +331,7 @@ flextable::flextable(df_cfa) %>%
     part = "header", j = "ChiSq",
     value = flextable::as_paragraph("\U03C7", flextable::as_sup("2"))
     ) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::italic(j = 4, part = "header") %>%
@@ -380,7 +380,7 @@ df_cfa_modparam <- sup.cat(
                 by = c("paramHeader", "param")))
 
 flextable::flextable(df_cfa_modparam) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -399,7 +399,7 @@ df_cfa_r2 <- sup.cat(
                 by = c("param"))
 
 flextable::flextable(df_cfa_r2) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -469,7 +469,7 @@ alpha_drop <- flextable::as_grouped_data(alpha_drop,
                                          groups = c( "wave","subscale"))
 
 flextable::as_flextable(alpha_drop) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>% 
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -541,7 +541,7 @@ total_stats <- flextable::as_grouped_data(total_stats,
                                           groups = c( "wave"))
 
 flextable::as_flextable(total_stats) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>% 
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -588,7 +588,7 @@ flextable::as_flextable(df_inv_tx) %>%
     value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""),
                                     flextable::as_sup("2"))
     ) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -643,7 +643,7 @@ flextable::as_flextable(df_inv_gender) %>%
     value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""), 
                                     flextable::as_sup("2"))
     ) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -698,7 +698,7 @@ flextable::as_flextable(df_inv_age) %>%
     value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""), 
                                     flextable::as_sup("2"))
     ) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -743,7 +743,7 @@ flextable::flextable(df_inv_lg) %>%
     value = flextable::as_paragraph(paste("\u0394","\U03C7", sep = ""), 
                                     flextable::as_sup("2"))
     ) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -781,7 +781,7 @@ flextable::flextable(df_cor_lg) %>%
   flextable::add_footer_row(values = "Notes: Correlation estimates are obtained from the longitudinal invariance models.", colwidths =  ncol(df_cor_lg)) %>%
   flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
                   colwidths =  ncol(df_cor_lg)) %>%
-  #flextable::align(part = "all") %>% 
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::bold(j = " ", part = "body") %>%
@@ -805,7 +805,7 @@ flextable::flextable(df_cor_bivar) %>%
   flextable::add_footer_row(values = "Notes: Factor scores are obtained from the longitudinal invariance models.", colwidths =  ncol(df_cor_bivar)) %>%
   flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
                   colwidths =  ncol(df_cor_bivar)) %>%
-  #flextable::align(part = "all") %>% 
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::bold(j = " ", part = "body") %>%
@@ -834,7 +834,7 @@ df_cor_item <- df_cor_item %>%
 flextable::flextable(df_cor_item) %>%
   flextable::add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.",
                   colwidths =  ncol(df_cor_item)) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::bold(j = " ", part = "body") %>%
@@ -867,7 +867,7 @@ df_cfa_modthreshold <- sup.cat(
                 by = c("paramHeader", "param")))
 
 flextable::flextable(df_cfa_modthreshold) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
@@ -919,7 +919,7 @@ item_stats <- flextable::as_grouped_data(item_stats,
                                          groups = c( "wave","subscale"))
 
 flextable::as_flextable(item_stats) %>%
-  #flextable::align(part = "all") %>%
+  flextable::align(align = "left", part = "all") %>%
   flextable::font(fontname = "Times", part = "all") %>%
   flextable::bold(part = "header") %>%
   flextable::fontsize(size = 10, part = "body") %>% 
